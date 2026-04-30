@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Collective Wellness · Command Center v2.1</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Lato:wght@300;400;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --forest: #1B4332;
+    --forest-mid: #24573F;
+    --forest-light: #2E6B4F;
+    --red: #8B2635;
+    --red-light: #A93040;
+    --cream: #FAF6EE;
+    --white: #FDFAF5;
+    --beige: #E8DCC4;
+    --beige-light: #F2EAD8;
+    --beige-deep: #D4C4A0;
+    --text: #2C1810;
+    --muted: #8A7560;
+    --bark: #5C3D2E;
+    --ok: #2D6A4F;
+    --warn: #C9A84C;
+    --alert: #8B2635;
+    --gold: #C9A84C;
+    --sage: #7A9E7E;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--cream);
+    color: var(--text);
+    font-family: 'Lato', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+    position: relative;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background:
+      radial-gradient(ellipse at 0% 0%, rgba(27,67,50,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse at 100% 100%, rgba(139,38,53,0.04) 0%, transparent 60%);
+  }
+  .wrap { max-width: 1320px; margin: 0 auto; padding: 40px 28px; position: relative; z-index: 1; }
+
+  .eyebrow {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+  h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(36px, 5vw, 58px);
+    font-weight: 500;
+    line-height: 1.05;
+    color: var(--forest);
+    margin-bottom: 14px;
+  }
+  h1 em { font-style: italic; color: var(--red); font-weight: 500; }
+  .sub {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px;
+    color: var(--muted);
+    font-style: italic;
+    max-width: 680px;
+    margin-bottom: 32px;
+  }
+
+  .tabs {
+    display: flex;
+    gap: 3px;
+    border-bottom: 2px solid var(--beige);
+    margin-bottom: 36px;
+    flex-wrap: wrap;
+  }
+  .tab {
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    padding: 12px 22px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.18s;
+  }
+  .tab:hover { color: var(--forest); }
+  .tab.active { color: var(--forest); border-bottom-color: var(--forest); font-weight: 700; }
+  .tab .who { color: var(--bark); font-weight: 400; margin-left: 6px; text-transform: none; letter-spacing: 0.05em; }
+
+  .view { display: none; }
+  .view.active { display: block; }
+
+  h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px;
+    font-weight: 500;
+    color: var(--forest);
+    margin: 36px 0 14px;
+  }
+  h2 em { font-style: italic; color: var(--red); }
+  h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.2;
+    margin-bottom: 8px;
+  }
+  .lead {
+    font-family: 'Lato', sans-serif;
+    font-size: 16px;
+    color: var(--text);
+    max-width: 760px;
+    margin-bottom: 24px;
+  }
+
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
+    gap: 3px;
+    margin-bottom: 32px;
+  }
+  .stat {
+    background: var(--white);
+    border: 1px solid var(--beige);
+    border-top: 3px solid var(--forest);
+    padding: 18px 16px;
+  }
+  .stat.alert-top { border-top-color: var(--alert); }
+  .stat.warn-top { border-top-color: var(--warn); }
+  .stat.ok-top { border-top-color: var(--ok); }
+  .stat.gold-top { border-top-color: var(--gold); }
+  .stat-n {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 46px;
+    font-weight: 600;
+    color: var(--forest);
+    line-height: 1;
+  }
+  .stat-l {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-top: 6px;
+  }
+
+  .card {
+    background: var(--white);
+    border: 1px solid var(--beige);
+    padding: 22px;
+    transition: all 0.18s;
+  }
+  .card:hover { border-color: var(--beige-deep); box-shadow: 0 4px 20px rgba(27, 67, 50, 0.08); }
+  .card.forest-top { border-top: 3px solid var(--forest); }
+  .card.red-top { border-top: 3px solid var(--red); }
+  .card.warn-top { border-top: 3px solid var(--warn); }
+  .card.sage-top { border-top: 3px solid var(--sage); }
+  .card.gold-top { border-top: 3px solid var(--gold); }
+  .card.bark-top { border-top: 3px solid var(--bark); }
+
+  .g2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 3px; margin-bottom: 24px; }
+  .g3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 3px; margin-bottom: 24px; }
+  .g4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 3px; margin-bottom: 24px; }
+
+  .prac-row {
+    background: var(--white);
+    border: 1px solid var(--beige);
+    border-left: 3px solid var(--forest);
+    padding: 14px 18px;
+    margin-bottom: 3px;
+    transition: all 0.15s;
+  }
+  .prac-row.intake-complete { border-left-color: var(--ok); }
+  .prac-row.tenant-only { border-left-color: var(--bark); }
+  .prac-row.occasional { border-left-color: var(--gold); }
+  .prac-row:hover { border-color: var(--beige-deep); }
+  .prac-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--forest);
+  }
+  .prac-name em { font-style: italic; color: var(--red); font-weight: 500; }
+  .prac-role {
+    font-family: 'Lato', sans-serif;
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .prac-meta {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .prac-cats {
+    font-family: 'Lato', sans-serif;
+    font-size: 12px;
+    color: var(--bark);
+    margin-top: 6px;
+  }
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border-radius: 2px;
+  }
+  .badge.tenant { background: var(--forest); color: var(--beige); }
+  .badge.yoga { background: var(--sage); color: var(--white); }
+  .badge.class { background: var(--bark); color: var(--beige); }
+  .badge.affiliate { background: var(--beige); color: var(--bark); }
+  .badge.occasional { background: var(--gold); color: var(--text); }
+  .badge.tenant-only { background: var(--beige-deep); color: var(--bark); }
+  .badge.founder { background: var(--red); color: var(--white); }
+  .badge.intake { background: var(--ok); color: var(--white); }
+  .badge.no-referral { background: var(--bark); color: var(--beige); }
+  .badge.mktg-full { background: var(--ok); color: var(--white); }
+  .badge.mktg-near { background: var(--sage); color: var(--white); }
+  .badge.mktg-mid { background: var(--warn); color: var(--text); }
+  .badge.mktg-low { background: var(--beige); color: var(--bark); }
+  .badge.mktg-zero { background: var(--alert); color: var(--white); }
+
+  .btn-primary {
+    background: var(--forest);
+    color: var(--beige);
+    padding: 12px 24px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-weight: 600;
+    border: none;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.18s;
+  }
+  .btn-primary:hover { background: var(--forest-mid); }
+  .btn-ghost {
+    background: transparent;
+    color: var(--forest);
+    border: 1px solid var(--forest);
+    padding: 12px 24px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.18s;
+  }
+  .btn-ghost:hover { background: var(--forest); color: var(--beige); }
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+
+  .net-wrap {
+    background: var(--white);
+    border: 1px solid var(--beige);
+    border-top: 3px solid var(--forest);
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+  .net-svg { width: 100%; height: 480px; display: block; }
+  .net-svg text {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+  }
+
+  .q-card {
+    background: var(--white);
+    border: 1px solid var(--beige);
+    border-top: 3px solid var(--forest);
+    padding: 22px;
+  }
+  .q-card.alert-top { border-top-color: var(--alert); }
+  .q-card.warn-top { border-top-color: var(--warn); }
+  .q-card.ok-top { border-top-color: var(--ok); }
+  .q-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 14px;
+    font-style: italic;
+    color: var(--red);
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+  }
+  .q-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--forest);
+    line-height: 1.2;
+    margin-bottom: 8px;
+  }
+  .q-body { font-size: 13px; color: var(--text); }
+  .q-body strong { font-weight: 700; color: var(--forest); }
+
+  table.diff {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--white);
+    border: 1px solid var(--beige);
+    margin-bottom: 24px;
+  }
+  table.diff th, table.diff td {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--beige);
+    font-size: 13px;
+    vertical-align: top;
+  }
+  table.diff th {
+    background: var(--beige-light);
+    font-family: 'Montserrat', sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--forest);
+  }
+  table.diff td.field {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--forest);
+  }
+
+  .divider { height: 1px; background: var(--beige); margin: 36px 0; }
+  .footer {
+    margin-top: 60px;
+    padding-top: 24px;
+    border-top: 2px solid var(--beige);
+    font-family: 'Montserrat', sans-serif;
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .filter-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+  .filter-pill {
+    padding: 6px 12px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border-radius: 2px;
+    background: var(--white);
+    color: var(--muted);
+    border: 1px solid var(--beige);
+    cursor: pointer;
+    user-select: none;
+  }
+  .filter-pill:hover { border-color: var(--forest); color: var(--forest); }
+  .filter-pill.active { background: var(--forest); color: var(--beige); border-color: var(--forest); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">Collective Wellness · Command Center · v2.1</div>
+  <h1>The Sovereign <em>Turn</em></h1>
+  <p class="sub">Jacki's edits applied. Co-anchor architecture, taxonomy v2, ASPT flagged, two intakes complete. Pending Jo signoff.</p>
+
+  <div class="tabs">
+    <button class="tab active" data-view="dashboard" onclick="setView('dashboard')">Dashboard <span class="who">Jacki + Jo</span></button>
+    <button class="tab" data-view="steward" onclick="setView('steward')">Steward Queue <span class="who">Jacki</span></button>
+    <button class="tab" data-view="operator" onclick="setView('operator')">Operator Ops <span class="who">Jo</span></button>
+    <button class="tab" data-view="architect" onclick="setView('architect')">Architecture <span class="who">Michael</span></button>
+  </div>
+
+  <!-- DASHBOARD VIEW (shared, Jacki + Jo) -->
+  <div class="view active" id="view-dashboard">
+
+    <div class="stats-row">
+      <div class="stat"><div class="stat-n">27</div><div class="stat-l">Practitioners</div></div>
+      <div class="stat ok-top"><div class="stat-n">2</div><div class="stat-l">Intakes Complete</div></div>
+      <div class="stat warn-top"><div class="stat-n">14</div><div class="stat-l">Jacki's Outreach</div></div>
+      <div class="stat alert-top"><div class="stat-n">3/4</div><div class="stat-l">Sovereign Gaps</div></div>
+      <div class="stat gold-top"><div class="stat-n">8</div><div class="stat-l">Categories Locked</div></div>
+    </div>
+
+    <h2>The Network <em>Today</em></h2>
+    <p class="lead">CW is the center. Jacki and Jo are co-anchors, both inside the system. HMBS sits as one of the tenants, not a separate entity. Practitioners route peer-to-peer.</p>
+
+    <div class="net-wrap">
+      <svg class="net-svg" viewBox="0 0 1100 480" preserveAspectRatio="xMidYMid meet">
+        <g stroke="#D4C4A0" stroke-width="1" fill="none" opacity="0.7">
+          <line x1="550" y1="240" x2="200" y2="120"/>
+          <line x1="550" y1="240" x2="200" y2="360"/>
+          <line x1="550" y1="240" x2="900" y2="120"/>
+          <line x1="550" y1="240" x2="900" y2="360"/>
+          <line x1="550" y1="240" x2="350" y2="80"/>
+          <line x1="550" y1="240" x2="350" y2="400"/>
+          <line x1="550" y1="240" x2="750" y2="80"/>
+          <line x1="550" y1="240" x2="750" y2="400"/>
+          <line x1="550" y1="240" x2="380" y2="240"/>
+          <line x1="550" y1="240" x2="720" y2="240"/>
+        </g>
+        <g>
+          <circle cx="350" cy="80" r="26" fill="#FDFAF5" stroke="#1B4332" stroke-width="2"/>
+          <text x="350" y="84" text-anchor="middle" fill="#1B4332">CLINICAL</text>
+          <circle cx="200" cy="120" r="26" fill="#FDFAF5" stroke="#7A9E7E" stroke-width="2"/>
+          <text x="200" y="120" text-anchor="middle" fill="#1B4332">MOVEMENT</text>
+          <text x="200" y="132" text-anchor="middle" fill="#1B4332">+ BREATH</text>
+          <circle cx="200" cy="360" r="26" fill="#FDFAF5" stroke="#5C3D2E" stroke-width="2"/>
+          <text x="200" y="364" text-anchor="middle" fill="#1B4332">BODYWORK</text>
+          <circle cx="350" cy="400" r="26" fill="#FDFAF5" stroke="#C9A84C" stroke-width="2"/>
+          <text x="350" y="404" text-anchor="middle" fill="#1B4332">ENERGY</text>
+          <circle cx="750" cy="400" r="26" fill="#FDFAF5" stroke="#8B2635" stroke-width="2"/>
+          <text x="750" y="400" text-anchor="middle" fill="#1B4332">MENTAL</text>
+          <text x="750" y="412" text-anchor="middle" fill="#1B4332">HEALTH</text>
+          <circle cx="900" cy="360" r="26" fill="#FDFAF5" stroke="#A93040" stroke-width="2"/>
+          <text x="900" y="364" text-anchor="middle" fill="#1B4332">BEAUTY</text>
+          <circle cx="900" cy="120" r="26" fill="#FDFAF5" stroke="#2D6A4F" stroke-width="2"/>
+          <text x="900" y="124" text-anchor="middle" fill="#1B4332">EDUCATION</text>
+          <circle cx="750" cy="80" r="26" fill="#FDFAF5" stroke="#24573F" stroke-width="2"/>
+          <text x="750" y="84" text-anchor="middle" fill="#1B4332">COACHING</text>
+        </g>
+        <!-- HMBS as a tenant inside the cluster -->
+        <circle cx="430" cy="280" r="18" fill="#FAF6EE" stroke="#8B2635" stroke-width="2"/>
+        <text x="430" y="284" text-anchor="middle" fill="#8B2635" font-size="8">HMBS</text>
+        <line x1="430" y1="280" x2="500" y2="240" stroke="#D4C4A0" stroke-width="1"/>
+        <!-- CW center -->
+        <circle cx="550" cy="240" r="50" fill="#1B4332" stroke="#FAF6EE" stroke-width="3"/>
+        <text x="550" y="234" text-anchor="middle" fill="#FAF6EE" font-size="10">COLLECTIVE</text>
+        <text x="550" y="250" text-anchor="middle" fill="#FAF6EE" font-size="10">WELLNESS</text>
+        <!-- Jacki co-anchor (left) -->
+        <circle cx="380" cy="240" r="32" fill="#FDFAF5" stroke="#8B2635" stroke-width="3"/>
+        <text x="380" y="238" text-anchor="middle" fill="#8B2635" font-size="11" font-weight="700">JACKI</text>
+        <text x="380" y="252" text-anchor="middle" fill="#8A7560" font-size="8">STEWARD</text>
+        <!-- Jo co-anchor (right) -->
+        <circle cx="720" cy="240" r="32" fill="#FDFAF5" stroke="#C9A84C" stroke-width="3"/>
+        <text x="720" y="238" text-anchor="middle" fill="#5C3D2E" font-size="11" font-weight="700">JO</text>
+        <text x="720" y="252" text-anchor="middle" fill="#8A7560" font-size="8">OPERATOR</text>
+        <!-- equal-partner connector between Jacki and Jo (visual cue) -->
+        <line x1="412" y1="240" x2="688" y2="240" stroke="#1B4332" stroke-width="2" stroke-dasharray="2,4" opacity="0.4"/>
+      </svg>
+    </div>
+
+    <h2>The Five <em>Monday Questions</em></h2>
+    <p class="lead">Shared by Jacki and Jo. Equal partners. Same dashboard, same questions, same answers — every Monday at 7am.</p>
+
+    <div class="g3">
+      <div class="q-card">
+        <div class="q-num">— 01 —</div>
+        <div class="q-title">Who is onboarding right now and what stage?</div>
+        <div class="q-body"><strong>3 active.</strong> Stages: lead, qualify, contract, payment, onboard.</div>
+      </div>
+      <div class="q-card alert-top">
+        <div class="q-num">— 02 —</div>
+        <div class="q-title">Whose contract or insurance expires in 60 days?</div>
+        <div class="q-body"><strong>2 flagged.</strong> Auto-renewal email queued.</div>
+      </div>
+      <div class="q-card warn-top">
+        <div class="q-num">— 03 —</div>
+        <div class="q-title">Who has paid, who owes, who needs an invoice?</div>
+        <div class="q-body"><strong>5 invoices open.</strong> 22 current.</div>
+      </div>
+      <div class="q-card">
+        <div class="q-num">— 04 —</div>
+        <div class="q-title">Who needs a welcome email, headshot, or social?</div>
+        <div class="q-body"><strong>9 pending.</strong> Tiffany + Crystal added today.</div>
+      </div>
+      <div class="q-card warn-top">
+        <div class="q-num">— 05 —</div>
+        <div class="q-title">Who has the marketing link and is awaiting response?</div>
+        <div class="q-body"><strong>14 sent, no reply.</strong> 7-day, 14-day cadence.</div>
+      </div>
+    </div>
+
+    <h2>Sovereign Readiness <em>Audit</em></h2>
+    <p class="lead">From Jacki's 2026-04-27 capture. Three of four still NOT YET. These are the hardening targets before any Thailand window.</p>
+
+    <div class="g4">
+      <div class="card red-top">
+        <div class="eyebrow">01 / Onboarding</div>
+        <h3>Without Jacki</h3>
+        <p style="margin-top:6px">Can Jo run a new practitioner end-to-end alone?</p>
+        <span class="badge mktg-zero" style="margin-top:8px">Not Yet</span>
+      </div>
+      <div class="card red-top">
+        <div class="eyebrow">02 / Contracts</div>
+        <h3>Auto-flag</h3>
+        <p style="margin-top:6px">Does the system flag and route renewal without manual sweep?</p>
+        <span class="badge mktg-zero" style="margin-top:8px">Not Yet</span>
+      </div>
+      <div class="card red-top">
+        <div class="eyebrow">03 / Search</div>
+        <h3>Conversational Routing</h3>
+        <p style="margin-top:6px">Client lands on site → routed to right practitioner?</p>
+        <span class="badge mktg-zero" style="margin-top:8px">Not Yet</span>
+      </div>
+      <div class="card forest-top">
+        <div class="eyebrow">04 / Referral</div>
+        <h3>Peer-to-peer</h3>
+        <p style="margin-top:6px">Practitioners refer to each other directly without Jacki?</p>
+        <span class="badge mktg-full" style="margin-top:8px">Yes</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- STEWARD QUEUE VIEW (Jacki) -->
+  <div class="view" id="view-steward">
+
+    <div class="stats-row">
+      <div class="stat warn-top"><div class="stat-n">14</div><div class="stat-l">Personal Outreach</div></div>
+      <div class="stat"><div class="stat-n">3</div><div class="stat-l">HMBS Workshops Q2</div></div>
+      <div class="stat ok-top"><div class="stat-n">8</div><div class="stat-l">Categories Locked</div></div>
+      <div class="stat gold-top"><div class="stat-n">3</div><div class="stat-l">Month Window</div></div>
+    </div>
+
+    <h2>Personal Outreach <em>Queue</em></h2>
+    <p class="lead">14 practitioners with zero of five marketing checkpoints. These are <strong>Jacki's conversations</strong> — personal note from her, not a Jo follow-up. Once they say yes, Jo runs the operational onboarding.</p>
+
+    <div id="outreach-queue"></div>
+
+    <h2>HMBS as a <em>Tenant</em></h2>
+    <p class="lead">HMBS sits inside CW like every other tenant. Jacki's three hats are explicit: founder, steward, practitioner.</p>
+
+    <div class="g3">
+      <div class="card red-top">
+        <h3>Founder</h3>
+        <p style="margin-top:6px">Founded CW. Holds the vision and the final yes on direction.</p>
+      </div>
+      <div class="card forest-top">
+        <h3>Steward</h3>
+        <p style="margin-top:6px">Co-anchor with Jo. Equal partner on the Monday questions. Owns personal outreach + workshop programming.</p>
+      </div>
+      <div class="card sage-top">
+        <h3>Practitioner (HMBS)</h3>
+        <p style="margin-top:6px">Tenant row inside the network. Qigong + Auriculotherapy + Education & Workshops + Movement & Breath.</p>
+      </div>
+    </div>
+
+    <h2>Programming <em>Calendar</em></h2>
+    <p class="lead">HMBS workshop arc lives here. Jo doesn't touch this surface unless explicitly delegated.</p>
+
+    <div class="card forest-top">
+      <p>Second Spring Series · Seasonal alignment · Five Element teaching arc · Auriculotherapy ear-seed sessions</p>
+      <p style="margin-top:8px; color: var(--muted)">Calendar surface stub — populates from HMBS Substack + workshop registrations once cut over.</p>
+    </div>
+
+  </div>
+
+  <!-- OPERATOR OPS VIEW (Jo) -->
+  <div class="view" id="view-operator">
+
+    <div class="stats-row">
+      <div class="stat warn-top"><div class="stat-n">3</div><div class="stat-l">Onboarding</div></div>
+      <div class="stat alert-top"><div class="stat-n">2</div><div class="stat-l">Contracts &lt; 60d</div></div>
+      <div class="stat warn-top"><div class="stat-n">5</div><div class="stat-l">Invoices Open</div></div>
+      <div class="stat ok-top"><div class="stat-n">2</div><div class="stat-l">Intakes Complete</div></div>
+      <div class="stat"><div class="stat-n">9</div><div class="stat-l">Welcome Pending</div></div>
+    </div>
+
+    <h2>Marketing <em>Engagement Ladder</em></h2>
+    <p class="lead">Move practitioners up the ladder one rung at a time. Jacki owns the pre-outreach rung; everything from "link sent" forward is Jo's.</p>
+
+    <div class="g3">
+      <div class="card forest-top">
+        <h3>Full</h3>
+        <div class="prac-role" style="margin-bottom:10px">All 5 checkpoints complete</div>
+        <span class="badge mktg-full">1 practitioner</span>
+        <p style="margin-top:10px">Jacki Mariest (HMBS)</p>
+      </div>
+      <div class="card sage-top">
+        <h3>Near-Full</h3>
+        <div class="prac-role" style="margin-bottom:10px">4 of 5 complete</div>
+        <span class="badge mktg-near">2 practitioners</span>
+        <p style="margin-top:10px">Kori Kelly, Stacey Henry-Carr</p>
+      </div>
+      <div class="card warn-top">
+        <h3>Mid</h3>
+        <div class="prac-role" style="margin-bottom:10px">3 of 5 complete</div>
+        <span class="badge mktg-mid">1 practitioner</span>
+        <p style="margin-top:10px">Kim Dehlbom (declined Flight)</p>
+      </div>
+      <div class="card bark-top">
+        <h3>Link Sent</h3>
+        <div class="prac-role" style="margin-bottom:10px">Outreach in motion</div>
+        <span class="badge mktg-low">7 practitioners</span>
+        <p style="margin-top:10px">Marisa, Stacey Brown, Anissa, Nicole, Jana, Yolanda, Cheryl</p>
+      </div>
+      <div class="card red-top">
+        <h3>Pre-Outreach <em style="font-style:italic;color:var(--red)">(Jacki)</em></h3>
+        <div class="prac-role" style="margin-bottom:10px">Personal note from Jacki</div>
+        <span class="badge mktg-zero">14 practitioners</span>
+        <p style="margin-top:10px">Hand-off to Jo once they reply yes.</p>
+      </div>
+    </div>
+
+    <h2>Roster — <em>27 Practitioners</em></h2>
+    <div class="filter-row">
+      <span class="filter-pill active" onclick="filterRoster(this, 'all')">All</span>
+      <span class="filter-pill" onclick="filterRoster(this, 'tenant')">Tenants</span>
+      <span class="filter-pill" onclick="filterRoster(this, 'yoga')">Yoga / Class</span>
+      <span class="filter-pill" onclick="filterRoster(this, 'affiliate')">Affiliate</span>
+      <span class="filter-pill" onclick="filterRoster(this, 'tenant-only')">Tenant-Only (No Referral)</span>
+      <span class="filter-pill" onclick="filterRoster(this, 'intake')">Intake Complete</span>
+    </div>
+    <div id="roster"></div>
+
+    <h2>Today's <em>Quick Actions</em></h2>
+    <div class="g2">
+      <div class="card forest-top">
+        <h3>Welcome 2 new intakes</h3>
+        <p style="margin-top:8px">Tiffany Moore + Crystal Hall. Bios + credentials in. Headshots → Megan @ Harper Edit.</p>
+      </div>
+      <div class="card warn-top">
+        <h3>Renew 2 expiring contracts</h3>
+        <p style="margin-top:8px">Email + DocuSign. CC Jacki only if Steward signoff is required.</p>
+      </div>
+      <div class="card sage-top">
+        <h3>Schedule headshot block</h3>
+        <p style="margin-top:8px">9 practitioners need a profile pic. One Saturday session covers it.</p>
+      </div>
+      <div class="card red-top">
+        <h3>Follow up on 7 'link sent'</h3>
+        <p style="margin-top:8px">14 days no reply on marketing link. Use the standard template.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ARCHITECT VIEW (Michael) -->
+  <div class="view" id="view-architect">
+
+    <div class="stats-row">
+      <div class="stat ok-top"><div class="stat-n">2/3</div><div class="stat-l">Signoffs</div></div>
+      <div class="stat warn-top"><div class="stat-n">10</div><div class="stat-l">Build Stages</div></div>
+      <div class="stat ok-top"><div class="stat-n">8</div><div class="stat-l">Categories</div></div>
+      <div class="stat gold-top"><div class="stat-n">v2.1</div><div class="stat-l">Architecture</div></div>
+    </div>
+
+    <h2>The Three <em>Signoff Gate</em></h2>
+    <p class="lead">Two of three confirmed. Jo is the last gate before V5 build.</p>
+
+    <div class="g3">
+      <div class="card forest-top">
+        <div class="eyebrow">01 / Steward</div>
+        <h3>Jacki</h3>
+        <p style="margin-top:8px">Yes with edits. Co-anchor framing, HMBS as tenant, occasional + tenant-only types, taxonomy v2 confirmed.</p>
+        <span class="badge mktg-full" style="margin-top:10px">Signed 2026-04-27</span>
+      </div>
+      <div class="card forest-top">
+        <div class="eyebrow">02 / Architect</div>
+        <h3>Michael</h3>
+        <p style="margin-top:8px">Approved. Taxonomy locked, data model, sequencing.</p>
+        <span class="badge mktg-full" style="margin-top:10px">Signed 2026-04-29</span>
+      </div>
+      <div class="card warn-top">
+        <div class="eyebrow">03 / Operator</div>
+        <h3>Jo</h3>
+        <p style="margin-top:8px">Pending. Confirm five Monday questions match her real workflow as Jacki's equal partner.</p>
+        <span class="badge mktg-low" style="margin-top:10px">Pending</span>
+      </div>
+    </div>
+
+    <h2>What Jacki <em>Changed</em></h2>
+    <table class="diff">
+      <thead>
+        <tr><th>Area</th><th>v2.0 Draft</th><th>v2.1 (Locked)</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="field">Entities</td><td>CW + HMBS as separate</td><td>One entity (CW). HMBS is a tenant.</td></tr>
+        <tr><td class="field">Jacki position</td><td>Outer ring (Steward)</td><td>Co-anchor with Jo (equal partners)</td></tr>
+        <tr><td class="field">Five Monday Questions</td><td>Jo's questions</td><td>Shared by Jacki + Jo</td></tr>
+        <tr><td class="field">14 pre-outreach</td><td>Jo's queue</td><td>Jacki's personal queue</td></tr>
+        <tr><td class="field">Tenant types</td><td>Tenant / yoga / class / affiliate / founder</td><td>+ Occasional (Kim Foss) + Tenant-only (ASPT)</td></tr>
+        <tr><td class="field">Movement & Energy</td><td>Original name</td><td>Renamed → <em>Movement & Breath</em></td></tr>
+        <tr><td class="field">Membership & Community</td><td>Practitioner category</td><td>Removed. Lives on Events surface.</td></tr>
+        <tr><td class="field">Coaching</td><td>Folded into Mental Health</td><td>New category: <em>Coaching & Guidance</em></td></tr>
+        <tr><td class="field">ASPT</td><td>Affiliate (in referral)</td><td>Tenant-only, out of referral</td></tr>
+        <tr><td class="field">Wendy</td><td>Pending</td><td>Affiliate, Education & Workshops</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Build <em>Sequence</em></h2>
+    <p class="lead">Ten stages. Linear. Don't skip.</p>
+
+    <div class="g2">
+      <div class="card forest-top"><h3>01 / Three signoffs</h3><p style="margin-top:6px">Jacki ✅ Michael ✅ Jo ⏳</p></div>
+      <div class="card forest-top"><h3>02 / Apply taxonomy v2</h3><p style="margin-top:6px">Multi-select on every node. Jacki's locked picks loaded.</p></div>
+      <div class="card forest-top"><h3>03 / Add tenant_type field</h3><p style="margin-top:6px">Including occasional + tenant-only. ASPT flagged.</p></div>
+      <div class="card forest-top"><h3>04 / Reposition co-anchors</h3><p style="margin-top:6px">Jacki + Jo inside CW, equal partners.</p></div>
+      <div class="card forest-top"><h3>05 / TCM → optional HMBS Lens</h3><p style="margin-top:6px">Default off. Toggle on for seasonal/HMBS view.</p></div>
+      <div class="card warn-top"><h3>06 / Audit referral edges</h3><p style="margin-top:6px">Strip Jacki-as-required. Replace with peer edges. Exclude ASPT.</p></div>
+      <div class="card warn-top"><h3>07 / Build dynamic intake form</h3><p style="margin-top:6px">One form, conditional logic. Tiffany + Crystal as templates.</p></div>
+      <div class="card warn-top"><h3>08 / Co-anchor Operator surface</h3><p style="margin-top:6px">Live data. Five Monday questions for both Jacki + Jo.</p></div>
+      <div class="card sage-top"><h3>09 / Conversational search</h3><p style="margin-top:6px">Taxonomy v2 as primary routing signal.</p></div>
+      <div class="card red-top"><h3>10 / Cowork cutover</h3><p style="margin-top:6px">Confirmed cut over now. Retire 4 superseded artifacts.</p></div>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    <div>Collective Wellness · The Sovereign Turn · v2.1</div>
+    <div>2026-04-29 · Jacki edits applied</div>
+  </div>
+
+</div>
+
+<script>
+  function setView(v) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.view === v));
+    document.querySelectorAll('.view').forEach(x => x.classList.toggle('active', x.id === 'view-' + v));
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  }
+
+  // ============ DATA: PRACTITIONERS (v2.1 — Jacki's locked categories) ============
+  const PRACTITIONERS = [
+    { id:'jacki', name:'JACKI MARIEST', biz:'Heal Mind Body Soul', role:'Founder · Steward · Qigong + Auriculotherapy', type:'founder', mktg:[1,1,1,1,1], cats:['Energy Work','Education & Workshops','Movement & Breath'], intake:false, inReferral:true },
+    { id:'kori', name:'KORI KELLY', biz:'', role:'Holistic Practitioner', type:'tenant', mktg:[1,1,0,1,1], cats:['Mental Health & Counseling','Energy Work','Education & Workshops'], intake:false, inReferral:true },
+    { id:'staceyhc', name:'STACEY HENRY-CARR', biz:'', role:'Practitioner', type:'tenant', mktg:[1,1,0,1,1], cats:['Mental Health & Counseling','Education & Workshops','Energy Work'], intake:false, inReferral:true },
+    { id:'kim', name:'DR. KIM DEHLBOM', biz:'Riptide Wellness', role:'Functional Medicine', type:'affiliate', mktg:[0,1,1,0,1], cats:['Clinical Services','Education & Workshops','Bodywork & Manual Therapy'], intake:false, inReferral:true },
+    { id:'marisa', name:'MARISA SISSEL', biz:'', role:'Practitioner', type:'tenant', mktg:[0,1,0,0,0], cats:['Mental Health & Counseling','Education & Workshops'], intake:false, inReferral:true },
+    { id:'staceyb', name:'STACEY BROWN', biz:'', role:'Practitioner', type:'tenant', mktg:[0,1,0,0,0], cats:['Mental Health & Counseling','Education & Workshops'], intake:false, inReferral:true },
+    { id:'anissa', name:'ANISSA RUSSELL', biz:'', role:'Somatic', type:'tenant', mktg:[0,1,0,0,1], cats:['Bodywork & Manual Therapy','Energy Work','Education & Workshops'], intake:false, inReferral:true },
+    { id:'nicole', name:'NICOLE NEVELE', biz:'', role:'Aesthetics', type:'tenant', mktg:[0,1,1,0,0], cats:['Beauty & Aesthetics'], intake:false, inReferral:true },
+    { id:'jana', name:'JANA KADOVITZ', biz:'', role:'Acupuncture · TCM', type:'tenant', mktg:[0,1,0,0,0], cats:['Energy Work','Clinical Services','Bodywork & Manual Therapy','Education & Workshops'], intake:false, inReferral:true },
+    { id:'yolanda', name:'YOLANDA GUIULFO', biz:'', role:'Bodywork', type:'tenant', mktg:[0,1,0,0,0], cats:['Bodywork & Manual Therapy'], intake:false, inReferral:true },
+    { id:'cheryl', name:'CHERYL MCDONOUGH', biz:'', role:'Medical Massage Therapist', type:'tenant', mktg:[1,1,0,0,0], cats:['Bodywork & Manual Therapy'], intake:false, inReferral:true },
+    { id:'tiffany', name:'TIFFANY MOORE', biz:'Tiffany\u2019s Therapeutic Massage LLC', role:'Therapeutic Massage · Oncology · TMJ · IASTM · 17 yrs', type:'tenant', mktg:[0,0,0,0,0], cats:['Bodywork & Manual Therapy'], intake:true, inReferral:true },
+    { id:'sean', name:'SEAN TURNER', biz:'', role:'Practitioner', type:'tenant', mktg:[0,0,0,0,0], cats:['Mental Health & Counseling'], intake:false, inReferral:true },
+    { id:'daystar', name:'DAYSTAR', biz:'', role:'Beauty / Aesthetics', type:'tenant', mktg:[0,0,0,0,0], cats:['Beauty & Aesthetics','Education & Workshops'], intake:false, inReferral:true },
+    { id:'crystalh', name:'CRYSTAL HALL', biz:'My Tru Therapy', role:'LPC Associate · Trauma-Informed · Couples · Adolescent', type:'tenant', mktg:[0,0,0,0,0], cats:['Mental Health & Counseling'], intake:true, inReferral:true },
+    { id:'aspt', name:'ASPT', biz:'', role:'Lab Services · Tenant-only', type:'tenant-only', mktg:[0,0,0,0,0], cats:[], intake:false, inReferral:false },
+    { id:'julie', name:'JULIE LINDROTH', biz:'', role:'Counseling', type:'tenant', mktg:[0,0,0,0,0], cats:['Mental Health & Counseling'], intake:false, inReferral:true },
+    { id:'teresa', name:'TERESA BULFORD', biz:'', role:'Yoga Instructor', type:'yoga', mktg:[0,0,0,0,0], cats:['Movement & Breath'], intake:false, inReferral:true },
+    { id:'annemarie', name:'ANNE MARIE LARMON', biz:'', role:'Yoga Instructor', type:'yoga', mktg:[0,0,0,0,0], cats:['Movement & Breath'], intake:false, inReferral:true },
+    { id:'marlene', name:'MARLENE GLASSER', biz:'', role:'Movement / Yoga', type:'yoga', mktg:[0,0,0,0,0], cats:['Movement & Breath'], intake:false, inReferral:true },
+    { id:'meghann', name:'MEGHANN CHAPMAN', biz:'', role:'Yoga Instructor', type:'yoga', mktg:[0,0,0,0,0], cats:['Movement & Breath'], intake:false, inReferral:true },
+    { id:'ashlynn', name:'ASHLYNN HASSELL', biz:'', role:'Yoga Instructor', type:'yoga', mktg:[0,0,0,0,0], cats:['Movement & Breath'], intake:false, inReferral:true },
+    { id:'beth', name:'BETH SCOTT', biz:'', role:'Feldenkrais', type:'class', mktg:[0,0,0,0,0], cats:['Movement & Breath','Bodywork & Manual Therapy'], intake:false, inReferral:true },
+    { id:'lisa', name:'LISA DITTMAR', biz:'', role:'Fitness', type:'class', mktg:[0,0,0,0,0], cats:['Movement & Breath'], intake:false, inReferral:true },
+    { id:'sarah', name:'SARAH GLENN', biz:'', role:'Movement / Lactation', type:'class', mktg:[0,0,0,0,0], cats:['Movement & Breath'], intake:false, inReferral:true },
+    { id:'sandra', name:'SANDRA GONZALEZ', biz:'', role:'Spanish-language Yoga', type:'yoga', mktg:[0,0,0,0,0], cats:['Movement & Breath'], intake:false, inReferral:true },
+    { id:'wendy', name:'WENDY (PILLOW TALK)', biz:'Pillow Talk', role:'Affiliate · Workshop / Drop-in', type:'affiliate', mktg:[0,0,0,0,0], cats:['Education & Workshops'], intake:false, inReferral:true }
+  ];
+
+  function mktgScore(arr) { return arr.reduce((a,b) => a+b, 0); }
+  function mktgClass(s) {
+    if (s === 5) return 'mktg-full';
+    if (s === 4) return 'mktg-near';
+    if (s === 3) return 'mktg-mid';
+    if (s >= 1) return 'mktg-low';
+    return 'mktg-zero';
+  }
+  function mktgLabel(s) {
+    if (s === 5) return 'Full · 5/5';
+    if (s === 4) return 'Near · 4/5';
+    if (s === 3) return 'Mid · 3/5';
+    if (s >= 1) return 'Sent · ' + s + '/5';
+    return 'Pre-outreach';
+  }
+
+  // ============ ROSTER (Operator) ============
+  let rosterFilter = 'all';
+  function filterRoster(el, f) {
+    rosterFilter = f;
+    document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+    renderRoster();
+  }
+  function renderRoster() {
+    const mount = document.getElementById('roster');
+    if (!mount) return;
+    const list = PRACTITIONERS.filter(p => {
+      if (rosterFilter === 'all') return true;
+      if (rosterFilter === 'tenant') return p.type === 'tenant' || p.type === 'founder';
+      if (rosterFilter === 'yoga') return p.type === 'yoga' || p.type === 'class';
+      if (rosterFilter === 'affiliate') return p.type === 'affiliate';
+      if (rosterFilter === 'tenant-only') return p.type === 'tenant-only';
+      if (rosterFilter === 'intake') return p.intake;
+      return true;
+    });
+    mount.innerHTML = list.map(p => {
+      const score = mktgScore(p.mktg);
+      const rowCls = ['prac-row'];
+      if (p.intake) rowCls.push('intake-complete');
+      if (p.type === 'tenant-only') rowCls.push('tenant-only');
+      const biz = p.biz ? `<span style="color:var(--bark);font-style:italic"> · ${p.biz}</span>` : '';
+      return `
+        <div class="${rowCls.join(' ')}">
+          <div class="prac-name">${p.name}${biz}</div>
+          <div class="prac-role">${p.role}</div>
+          <div class="prac-meta">
+            <span class="badge ${p.type}">${p.type}</span>
+            <span class="badge ${mktgClass(score)}">${mktgLabel(score)}</span>
+            ${p.intake ? '<span class="badge intake">Intake Complete</span>' : ''}
+            ${!p.inReferral ? '<span class="badge no-referral">No Referral</span>' : ''}
+          </div>
+          ${p.cats.length ? `<div class="prac-cats">${p.cats.join(' · ')}</div>` : '<div class="prac-cats" style="color:var(--muted)">— no clinical categories —</div>'}
+        </div>
+      `;
+    }).join('');
+  }
+
+  // ============ STEWARD OUTREACH QUEUE ============
+  function renderOutreachQueue() {
+    const mount = document.getElementById('outreach-queue');
+    if (!mount) return;
+    const list = PRACTITIONERS.filter(p => mktgScore(p.mktg) === 0 && p.type !== 'tenant-only');
+    mount.innerHTML = list.map(p => `
+      <div class="prac-row">
+        <div class="prac-name">${p.name}</div>
+        <div class="prac-role">${p.role}</div>
+        <div class="prac-meta">
+          <span class="badge ${p.type}">${p.type}</span>
+          <span class="badge mktg-zero">Pre-outreach</span>
+          ${p.intake ? '<span class="badge intake">Intake In</span>' : ''}
+        </div>
+        ${p.cats.length ? `<div class="prac-cats">${p.cats.join(' · ')}</div>` : ''}
+      </div>
+    `).join('');
+  }
+
+  renderRoster();
+  renderOutreachQueue();
+</script>
+
+</body>
+</html>
