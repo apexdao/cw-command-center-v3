@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Collective Wellness · Command Center v3</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Lato:wght@300;400;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --forest:       #1B4332;
+  --forest-mid:   #24573F;
+  --forest-light: #2E6B4F;
+  --red:          #8B2635;
+  --red-light:    #A93040;
+  --cream:        #FAF6EE;
+  --white:        #FDFAF5;
+  --beige:        #E8DCC4;
+  --beige-light:  #F2EAD8;
+  --beige-deep:   #D4C4A0;
+  --text:         #2C1810;
+  --muted:        #8A7560;
+  --bark:         #5C3D2E;
+  --ok:           #2D6A4F;
+  --warn:         #C9A84C;
+  --alert:        #8B2635;
+  --gold:         #C9A84C;
+  --sage:         #7A9E7E;
+  --plum:         #6B3E6B;
+  --plum-light:   #9B6B9B;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--cream); color: var(--text);
+  font-family: 'Lato', sans-serif; font-size: 14px;
+  line-height: 1.6; min-height: 100vh; position: relative;
+}
+body::before {
+  content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background:
+    radial-gradient(ellipse at 0% 0%, rgba(27,67,50,0.06) 0%, transparent 60%),
+    radial-gradient(ellipse at 100% 100%, rgba(139,38,53,0.04) 0%, transparent 60%);
+}
+.wrap { max-width: 1320px; margin: 0 auto; padding: 40px 28px; position: relative; z-index: 1; }
+
+/* TYPE */
+.eyebrow { font-family:'Montserrat',sans-serif; font-size:10px; font-weight:500; letter-spacing:0.22em; text-transform:uppercase; color:var(--muted); margin-bottom:10px; }
+h1 { font-family:'Cormorant Garamond',serif; font-size:clamp(36px,5vw,58px); font-weight:500; line-height:1.05; color:var(--forest); margin-bottom:14px; }
+h1 em { font-style:italic; color:var(--red); font-weight:500; }
+.sub { font-family:'Cormorant Garamond',serif; font-size:18px; color:var(--muted); font-style:italic; max-width:680px; margin-bottom:8px; }
+h2 { font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:500; color:var(--forest); margin:36px 0 14px; }
+h2 em { font-style:italic; color:var(--red); }
+h3 { font-family:'Cormorant Garamond',serif; font-size:22px; font-weight:600; color:var(--text); line-height:1.2; margin-bottom:8px; }
+.lead { font-family:'Lato',sans-serif; font-size:15px; color:var(--text); max-width:760px; margin-bottom:24px; }
+
+/* TABS */
+.tabs { display:flex; gap:3px; border-bottom:2px solid var(--beige); margin-bottom:36px; flex-wrap:wrap; }
+.tab { background:transparent; border:none; border-bottom:3px solid transparent; margin-bottom:-2px; padding:12px 22px; font-family:'Montserrat',sans-serif; font-size:10px; font-weight:500; letter-spacing:0.18em; text-transform:uppercase; color:var(--muted); cursor:pointer; transition:all 0.18s; }
+.tab:hover { color:var(--forest); }
+.tab.active { color:var(--forest); border-bottom-color:var(--forest); font-weight:700; }
+.tab .who { color:var(--bark); font-weight:400; margin-left:6px; text-transform:none; letter-spacing:0.05em; font-size:9px; }
+.view { display:none; }
+.view.active { display:block; animation: fadeUp 0.22s ease; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+
+/* SUB-TABS (Operator) */
+.subtabs { display:flex; gap:2px; border-bottom:1px solid var(--beige); margin-bottom:28px; flex-wrap:wrap; }
+.subtab { background:transparent; border:none; border-bottom:2px solid transparent; margin-bottom:-1px; padding:8px 18px; font-family:'Montserrat',sans-serif; font-size:9px; font-weight:600; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted); cursor:pointer; transition:all 0.15s; }
+.subtab:hover { color:var(--bark); }
+.subtab.active { color:var(--bark); border-bottom-color:var(--bark); }
+.subview { display:none; }
+.subview.active { display:block; }
+
+/* STATS */
+.stats-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:3px; margin-bottom:32px; }
+.stat { background:var(--white); border:1px solid var(--beige); border-top:3px solid var(--forest); padding:18px 16px; }
+.stat.alert-top { border-top-color:var(--alert); }
+.stat.warn-top  { border-top-color:var(--warn); }
+.stat.ok-top    { border-top-color:var(--ok); }
+.stat.gold-top  { border-top-color:var(--gold); }
+.stat.sage-top  { border-top-color:var(--sage); }
+.stat.red-top   { border-top-color:var(--red); }
+.stat-n { font-family:'Cormorant Garamond',serif; font-size:46px; font-weight:600; color:var(--forest); line-height:1; }
+.stat.ok-top .stat-n    { color:var(--ok); }
+.stat.alert-top .stat-n, .stat.red-top .stat-n { color:var(--alert); }
+.stat.warn-top .stat-n  { color:var(--gold); }
+.stat.sage-top .stat-n  { color:var(--sage); }
+.stat-l { font-family:'Montserrat',sans-serif; font-size:9px; font-weight:500; letter-spacing:0.14em; color:var(--muted); text-transform:uppercase; margin-top:6px; }
+
+/* CARDS */
+.card { background:var(--white); border:1px solid var(--beige); padding:22px; transition:all 0.18s; }
+.card:hover { border-color:var(--beige-deep); box-shadow:0 4px 20px rgba(27,67,50,0.08); }
+.card.forest-top { border-top:3px solid var(--forest); }
+.card.red-top    { border-top:3px solid var(--red); }
+.card.warn-top   { border-top:3px solid var(--warn); }
+.card.sage-top   { border-top:3px solid var(--sage); }
+.card.gold-top   { border-top:3px solid var(--gold); }
+.card.bark-top   { border-top:3px solid var(--bark); }
+.card.ok-top     { border-top:3px solid var(--ok); }
+.card.plum-top   { border-top:3px solid var(--plum); }
+.card.alert-left { border-left:4px solid var(--alert); }
+.card.warn-left  { border-left:4px solid var(--warn); }
+.card.ok-left    { border-left:4px solid var(--ok); }
+.g2 { display:grid; grid-template-columns:repeat(auto-fit,minmax(380px,1fr)); gap:3px; margin-bottom:24px; }
+.g3 { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:3px; margin-bottom:24px; }
+.g4 { display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:3px; margin-bottom:24px; }
+
+/* BADGES */
+.badge { display:inline-block; padding:3px 10px; font-family:'Montserrat',sans-serif; font-size:9px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; }
+.badge.ok      { background:var(--ok); color:var(--white); }
+.badge.alert   { background:var(--alert); color:var(--white); }
+.badge.warn    { background:var(--warn); color:var(--text); }
+.badge.sage    { background:var(--sage); color:var(--white); }
+.badge.bark    { background:var(--bark); color:var(--beige); }
+.badge.muted-b { background:var(--beige); color:var(--bark); }
+.badge.forest  { background:var(--forest); color:var(--beige); }
+.badge.plum    { background:var(--plum); color:var(--white); }
+.badge.gold    { background:var(--gold); color:var(--text); }
+.badge.red     { background:var(--red); color:var(--white); }
+
+/* FILTER PILLS */
+.filter-row { display:flex; gap:4px; flex-wrap:wrap; margin-bottom:18px; }
+.filter-pill { padding:5px 12px; cursor:pointer; user-select:none; font-family:'Montserrat',sans-serif; font-size:9px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; background:var(--white); color:var(--muted); border:1px solid var(--beige); transition:all 0.15s; }
+.filter-pill:hover { border-color:var(--forest); color:var(--forest); }
+.filter-pill.active { background:var(--forest); color:var(--beige); border-color:var(--forest); }
+
+/* PRACTITIONER ROWS */
+.prac-row { background:var(--white); border:1px solid var(--beige); border-left:3px solid var(--forest); padding:14px 18px; margin-bottom:3px; transition:all 0.15s; cursor:pointer; }
+.prac-row:hover { border-color:var(--beige-deep); box-shadow:0 2px 12px rgba(27,67,50,0.07); }
+.prac-row.intake-complete { border-left-color:var(--ok); }
+.prac-row.intake-partial  { border-left-color:var(--gold); }
+.prac-row.intake-none     { border-left-color:var(--alert); }
+.prac-row.tenant-only     { border-left-color:var(--bark); opacity:0.75; }
+.prac-row.archived        { border-left-color:var(--beige-deep); opacity:0.45; }
+.prac-name { font-family:'Cormorant Garamond',serif; font-size:20px; font-weight:600; color:var(--forest); }
+.prac-biz  { font-family:'Lato',sans-serif; font-size:12px; color:var(--bark); font-style:italic; margin-left:8px; }
+.prac-role { font-size:12px; color:var(--muted); margin-top:2px; }
+.prac-meta { display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; align-items:center; }
+.prac-buckets { display:flex; gap:4px; flex-wrap:wrap; margin-top:6px; }
+.bucket-tag { font-family:'Montserrat',sans-serif; font-size:8px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; padding:2px 8px; }
+.bucket-tag.energy    { background:rgba(107,62,107,0.12); color:var(--plum); border:1px solid rgba(107,62,107,0.25); }
+.bucket-tag.education { background:rgba(27,67,50,0.09); color:var(--forest); border:1px solid rgba(27,67,50,0.2); }
+.bucket-tag.movement  { background:rgba(92,61,46,0.09); color:var(--bark); border:1px solid rgba(92,61,46,0.2); }
+.bucket-tag.none      { background:var(--beige); color:var(--muted); border:1px solid var(--beige-deep); }
+.gap-meter { display:flex; gap:3px; margin-top:8px; }
+.gap-pip { width:22px; height:5px; background:var(--beige); }
+.gap-pip.filled  { background:var(--ok); }
+.gap-pip.partial { background:var(--gold); }
+.prac-detail { display:none; margin-top:14px; padding-top:14px; border-top:1px solid var(--beige); }
+.prac-detail.open { display:block; }
+.detail-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; }
+.detail-label { font-family:'Montserrat',sans-serif; font-size:8px; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted); margin-bottom:4px; }
+.detail-val { font-size:13px; color:var(--text); }
+.detail-val.missing { color:var(--alert); font-style:italic; }
+.detail-val.partial { color:var(--gold); }
+.detail-val.complete { color:var(--ok); }
+
+/* TOOLTIPS */
+.tip { position:relative; cursor:help; border-bottom:1px dashed var(--muted); display:inline; }
+.tip:hover .tip-pop { display:block; }
+.tip-pop { display:none; position:absolute; bottom:120%; left:0; background:var(--white); border:1px solid var(--beige-deep); box-shadow:0 4px 16px rgba(27,67,50,0.12); padding:10px 14px; z-index:20; min-width:200px; max-width:300px; font-family:'Lato',sans-serif; font-size:12px; color:var(--text); line-height:1.5; white-space:normal; font-style:normal; }
+
+/* TASK ROWS */
+.task-row { background:var(--white); border:1px solid var(--beige); padding:18px 20px; margin-bottom:3px; display:flex; align-items:flex-start; gap:16px; }
+.task-row.task-alert { border-left:4px solid var(--alert); }
+.task-row.task-warn  { border-left:4px solid var(--warn); }
+.task-row.task-ok    { border-left:4px solid var(--ok); }
+.task-num { font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:500; color:var(--muted); min-width:32px; line-height:1; }
+.task-title { font-family:'Cormorant Garamond',serif; font-size:18px; font-weight:600; color:var(--text); margin-bottom:4px; }
+.task-body { font-size:13px; color:var(--muted); }
+.task-body strong { color:var(--text); }
+
+/* TENANT TABLE */
+.tenant-table { width:100%; border-collapse:collapse; margin-bottom:24px; }
+.tenant-table th { background:var(--beige-light); padding:10px 14px; font-family:'Montserrat',sans-serif; font-size:9px; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; color:var(--forest); text-align:left; border-bottom:2px solid var(--forest); }
+.tenant-table td { padding:12px 14px; border-bottom:1px solid var(--beige); font-size:13px; vertical-align:middle; }
+.tenant-table tr:hover td { background:rgba(27,67,50,0.03); }
+.tenant-name { font-family:'Cormorant Garamond',serif; font-size:17px; font-weight:600; color:var(--forest); }
+
+/* MKTG LADDER */
+.ladder-rung { background:var(--white); border:1px solid var(--beige); padding:16px 20px; margin-bottom:3px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; }
+.rung-label { font-family:'Cormorant Garamond',serif; font-size:18px; font-weight:600; color:var(--forest); }
+.rung-names { font-size:13px; color:var(--muted); }
+.rung-count { font-family:'Cormorant Garamond',serif; font-size:32px; font-weight:600; color:var(--forest); min-width:40px; text-align:right; }
+
+/* GAP CARDS (Founder) */
+.gap-item { padding:10px 0; border-bottom:1px solid var(--beige); display:flex; align-items:flex-start; gap:12px; font-size:13px; }
+.gap-item:last-child { border-bottom:none; }
+.gap-dot { width:8px; height:8px; border-radius:50%; margin-top:4px; flex-shrink:0; }
+.gap-dot.red    { background:var(--alert); }
+.gap-dot.amber  { background:var(--gold); }
+.gap-dot.green  { background:var(--ok); }
+
+/* OFFERING ROWS */
+.offering-row { background:var(--white); border:1px solid var(--beige); border-left:3px solid var(--sage); padding:14px 18px; margin-bottom:3px; }
+.offering-row.presell { border-left-color:var(--gold); }
+.offering-row.forming { border-left-color:var(--bark); }
+.offering-row.active  { border-left-color:var(--ok); }
+.offering-name { font-family:'Cormorant Garamond',serif; font-size:18px; font-weight:600; color:var(--forest); }
+.offering-meta { display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; align-items:center; }
+.prog-bar-wrap { height:8px; background:var(--beige); width:100%; margin-top:8px; }
+.prog-bar { height:100%; background:var(--sage); }
+.prog-bar.low { background:var(--alert); }
+.prog-bar.mid { background:var(--gold); }
+
+/* ===== PUBLIC / ROUTER ===== */
+.router-wrap { background:var(--white); border:1px solid var(--beige); border-top:3px solid var(--forest); padding:32px; margin-bottom:24px; }
+.router-section-label { font-family:'Montserrat',sans-serif; font-size:10px; font-weight:700; letter-spacing:0.2em; text-transform:uppercase; color:var(--muted); margin-bottom:12px; }
+.symptom-cloud { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:24px; }
+.symptom-tag { padding:7px 16px; font-family:'Lato',sans-serif; font-size:13px; font-weight:400; cursor:pointer; background:var(--beige-light); color:var(--bark); border:1px solid var(--beige-deep); transition:all 0.15s; user-select:none; }
+.symptom-tag:hover { border-color:var(--forest); color:var(--forest); }
+.symptom-tag.selected { background:var(--forest); color:var(--beige-light); border-color:var(--forest); }
+.router-controls { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin-bottom:24px; }
+.router-control label { font-family:'Montserrat',sans-serif; font-size:9px; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted); display:block; margin-bottom:6px; }
+.router-control select { width:100%; padding:10px 12px; background:var(--beige-light); border:1px solid var(--beige-deep); color:var(--text); font-family:'Lato',sans-serif; font-size:13px; cursor:pointer; }
+.router-control select:focus { outline:none; border-color:var(--forest); }
+.route-btn { background:var(--forest); color:var(--beige-light); padding:14px 32px; font-family:'Montserrat',sans-serif; font-size:10px; font-weight:700; letter-spacing:0.18em; text-transform:uppercase; border:none; cursor:pointer; transition:all 0.18s; }
+.route-btn:hover { background:var(--forest-mid); }
+.route-btn:disabled { background:var(--beige-deep); color:var(--muted); cursor:not-allowed; }
+.router-results { margin-top:32px; }
+.result-card { background:var(--white); border:1px solid var(--beige); border-top:3px solid var(--forest); padding:20px; margin-bottom:4px; }
+.result-card.match-strong { border-top-color:var(--ok); }
+.result-card.match-mid    { border-top-color:var(--gold); }
+.result-rank { font-family:'Cormorant Garamond',serif; font-size:13px; font-style:italic; color:var(--red); margin-bottom:4px; }
+.result-name { font-family:'Cormorant Garamond',serif; font-size:22px; font-weight:600; color:var(--forest); }
+.result-why  { font-size:13px; color:var(--text); margin:8px 0; }
+.result-tags { display:flex; gap:4px; flex-wrap:wrap; margin-top:8px; }
+.match-tag { background:rgba(27,67,50,0.09); color:var(--forest); border:1px solid rgba(27,67,50,0.2); font-family:'Montserrat',sans-serif; font-size:8px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; padding:2px 8px; }
+.no-match-state { text-align:center; padding:40px 20px; }
+.flight-card { background:var(--beige-light); border:1px solid var(--beige-deep); border-left:4px solid var(--gold); padding:20px; margin-top:16px; }
+.flight-card h3 { font-family:'Cormorant Garamond',serif; font-size:22px; color:var(--bark); }
+
+/* DIVIDER */
+.divider { height:1px; background:var(--beige); margin:36px 0; }
+
+/* FOOTER */
+.footer { margin-top:60px; padding-top:24px; border-top:2px solid var(--beige); font-family:'Montserrat',sans-serif; font-size:9px; letter-spacing:0.18em; text-transform:uppercase; color:var(--muted); display:flex; justify-content:space-between; flex-wrap:wrap; gap:16px; }
+
+/* SOVEREIGN READINESS */
+.readiness-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:3px; margin-bottom:24px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">Collective Wellness · Command Center · v3.0 · Phase 2 Complete</div>
+  <h1>The Sovereign <em>Turn</em></h1>
+  <p class="sub">26 practitioners. Four views. Symptom-first routing live. Jacki's handoff bundle ready.</p>
+
+  <div class="tabs">
+    <button class="tab active" data-view="founder"     onclick="setView('founder')">Founder <span class="who">Jacki · God Mode</span></button>
+    <button class="tab"        data-view="operator"   onclick="setView('operator')">Operator <span class="who">Jo · Monday AM</span></button>
+    <button class="tab"        data-view="practitioner" onclick="setView('practitioner')">Practitioner <span class="who">Roster + Gaps</span></button>
+    <button class="tab"        data-view="public"     onclick="setView('public')">Public <span class="who">Client Routing</span></button>
+  </div>
+
+  <!-- ================================================================ -->
+  <!-- FOUNDER VIEW                                                      -->
+  <!-- ================================================================ -->
+  <div class="view active" id="view-founder">
+
+    <div class="stats-row">
+      <div class="stat"><div class="stat-n" id="f-total">26</div><div class="stat-l">Active Practitioners</div></div>
+      <div class="stat ok-top"><div class="stat-n" id="f-intake">6</div><div class="stat-l">Intake Complete</div></div>
+      <div class="stat warn-top"><div class="stat-n" id="f-forming">4</div><div class="stat-l">Offerings Forming</div></div>
+      <div class="stat alert-top"><div class="stat-n">3</div><div class="stat-l">Sovereign Gaps</div></div>
+      <div class="stat gold-top"><div class="stat-n" id="f-preout">14</div><div class="stat-l">Pre-Outreach Queue</div></div>
+    </div>
+
+    <h2>Strategic <em>Gaps</em></h2>
+    <p class="lead">Where the network is thin, under-capacity, or missing entirely. These are the expansion levers you have without adding more rooms.</p>
+
+    <div class="g3">
+      <div class="card forest-top">
+        <h3>Under-Represented Modalities</h3>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">Modalities with one practitioner or zero. Single point of failure or open demand.</p>
+        <div class="gap-item"><div class="gap-dot red"></div><div><strong>Pilates</strong> — 0 practitioners. Known demand category, community room ready.</div></div>
+        <div class="gap-item"><div class="gap-dot red"></div><div><strong>Dedicated Reiki</strong> — 0 standalone. Jacki does breathwork; energy work has supply gaps.</div></div>
+        <div class="gap-item"><div class="gap-dot red"></div><div><strong>Breathwork (dedicated)</strong> — 0. Overlaps with Qigong demand but a distinct client population.</div></div>
+        <div class="gap-item"><div class="gap-dot amber"></div><div><strong>Acupuncture / TCM</strong> — 1 (Jana only). Single point of failure for that referral stream.</div></div>
+        <div class="gap-item"><div class="gap-dot amber"></div><div><strong>Feldenkrais</strong> — 1 (Beth). Hard to market by name; chatbot will route by symptom instead.</div></div>
+        <div class="gap-item"><div class="gap-dot amber"></div><div><strong>Spanish-language</strong> — 1 (Sandra, yoga). Underutilized community differentiator.</div></div>
+      </div>
+      <div class="card warn-top">
+        <h3>Under-Capacity Offerings</h3>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">Classes and workshops not yet filling. Community room should be booked at all times.</p>
+        <div id="founder-offerings-gaps"></div>
+      </div>
+      <div class="card red-top">
+        <h3>Missing Roles to Recruit</h3>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">Gaps in the network that represent revenue and referral opportunities once filled.</p>
+        <div class="gap-item"><div class="gap-dot red"></div><div><strong>Pilates instructor</strong> — highest-demand gap in Movement and Breath.</div></div>
+        <div class="gap-item"><div class="gap-dot red"></div><div><strong>Dedicated Reiki / energy healer</strong> — Energy Work bucket needs depth beyond Jacki.</div></div>
+        <div class="gap-item"><div class="gap-dot red"></div><div><strong>Naturopath or integrative medicine MD</strong> — to complement Kim Dehlbom's functional medicine.</div></div>
+        <div class="gap-item"><div class="gap-dot amber"></div><div><strong>Second acupuncturist</strong> — Jana is the only TCM/acupuncture practitioner. Backup needed as demand grows.</div></div>
+        <div class="gap-item"><div class="gap-dot amber"></div><div><strong>Craniosacral therapist</strong> — bridges bodywork and energy work; strong fit for CW's client profile.</div></div>
+        <div class="gap-item"><div class="gap-dot amber"></div><div><strong>Spanish-language counselor or coach</strong> — Sandra has the community; a clinician would complete the loop.</div></div>
+      </div>
+    </div>
+
+    <h2>Sovereign <em>Readiness</em></h2>
+    <p class="lead">Three of four still not yet. These are the hardening targets before the autopilot window opens — Jacki gets alerts only, not daily ops.</p>
+
+    <div class="readiness-row">
+      <div class="card red-top"><div class="eyebrow">01 / Onboarding</div><h3>Without Jacki</h3><p style="margin-top:6px;font-size:13px;">Can Jo run a new practitioner end-to-end alone?</p><span class="badge alert" style="margin-top:10px;display:inline-block;">Not Yet</span></div>
+      <div class="card red-top"><div class="eyebrow">02 / Contracts</div><h3>Auto-flag</h3><p style="margin-top:6px;font-size:13px;">Does the system flag and route renewal without manual sweep?</p><span class="badge alert" style="margin-top:10px;display:inline-block;">Not Yet</span></div>
+      <div class="card red-top"><div class="eyebrow">03 / Search</div><h3>Conversational Routing</h3><p style="margin-top:6px;font-size:13px;">Client lands, gets routed to right practitioner without Jacki picking up the phone.</p><span class="badge warn" style="margin-top:10px;display:inline-block;">Stub Live (see Public tab)</span></div>
+      <div class="card forest-top"><div class="eyebrow">04 / Referral</div><h3>Peer-to-Peer</h3><p style="margin-top:6px;font-size:13px;">Practitioners refer to each other directly without Jacki as the router.</p><span class="badge ok" style="margin-top:10px;display:inline-block;">Yes</span></div>
+    </div>
+
+    <h2>All <em>Offerings</em></h2>
+    <p class="lead">Classes, workshops, sound baths, and Flights tracked independently. A class can outlive any one instructor.</p>
+    <div id="founder-offerings-all"></div>
+
+    <h2>Full <em>Roster</em></h2>
+    <p class="lead">Every practitioner including archived. Click to expand all fields. This is god mode — nothing hidden.</p>
+    <div class="filter-row" id="founder-filter-row">
+      <span class="filter-pill active" onclick="filterFounder(this,'all')">All</span>
+      <span class="filter-pill" onclick="filterFounder(this,'intake')">Intake Complete</span>
+      <span class="filter-pill" onclick="filterFounder(this,'gaps')">Intake Gaps</span>
+      <span class="filter-pill" onclick="filterFounder(this,'archived')">Archived</span>
+    </div>
+    <div id="founder-roster"></div>
+  </div>
+
+  <!-- ================================================================ -->
+  <!-- OPERATOR VIEW                                                     -->
+  <!-- ================================================================ -->
+  <div class="view" id="view-operator">
+
+    <div class="stats-row">
+      <div class="stat alert-top"><div class="stat-n">1</div><div class="stat-l">Lease Alert (60d)</div></div>
+      <div class="stat warn-top"><div class="stat-n" id="op-intake-gaps">20</div><div class="stat-l">Intake Pending</div></div>
+      <div class="stat"><div class="stat-n">14</div><div class="stat-l">Pre-Outreach</div></div>
+      <div class="stat ok-top"><div class="stat-n">6</div><div class="stat-l">Intake Complete</div></div>
+      <div class="stat sage-top"><div class="stat-n">7</div><div class="stat-l">Mktg In Motion</div></div>
+    </div>
+
+    <h2>Monday <em>Morning</em></h2>
+    <p class="lead">Max output. Least time. Before attention drifts. Alerts require action. Updates are for awareness only.</p>
+
+    <div class="subtabs">
+      <button class="subtab active" data-sub="tasks"   onclick="setSub('tasks')">Top Tasks</button>
+      <button class="subtab"        data-sub="tenant"  onclick="setSub('tenant')">Tenant Updates</button>
+      <button class="subtab"        data-sub="ladder"  onclick="setSub('ladder')">Marketing Ladder</button>
+    </div>
+
+    <!-- TOP TASKS -->
+    <div class="subview active" id="sub-tasks">
+      <div class="task-row task-alert">
+        <div class="task-num">1</div>
+        <div>
+          <div class="task-title">Cheryl's lease renews in 54 days — start the conversation now</div>
+          <div class="task-body">Room 8. Lease expiry <strong>June 30, 2026</strong>. Send renewal email with DocuSign. CC Jacki only if Steward signoff is required. Don't wait until 30 days — gives negotiating room if terms need adjusting.</div>
+          <div style="margin-top:8px;"><span class="badge alert">Alert · Action Required</span></div>
+        </div>
+      </div>
+      <div class="task-row task-warn">
+        <div class="task-num">2</div>
+        <div>
+          <div class="task-title">Chase headshots for Tiffany Moore and Crystal Hall</div>
+          <div class="task-body">Both intakes complete. Both bios publish-ready. Both are missing profile photos. Contact <strong>Megan at Harper Edit</strong> to schedule a headshot block — one Saturday session covers both. Without photos, their profiles can't go live on the site.</div>
+          <div style="margin-top:8px;"><span class="badge warn">Update · This Week</span></div>
+        </div>
+      </div>
+      <div class="task-row task-warn">
+        <div class="task-num">3</div>
+        <div>
+          <div class="task-title">7 practitioners at "link sent" — 14-day follow-up due</div>
+          <div class="task-body">Marisa, Stacey Brown, Anissa, Nicole, Jana, Yolanda, Stacey Bowman received the marketing link. Standard 7-day and 14-day cadence. Use the template — do not improvise. Escalate to Jacki's personal queue only if no reply after 21 days.</div>
+          <div style="margin-top:8px;"><span class="badge warn">Update · This Week</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TENANT UPDATES -->
+    <div class="subview" id="sub-tenant">
+      <p class="lead" style="margin-bottom:16px;">Contracts, insurance, and business license in one place. All biz licenses expire in April — that's an annual cluster event, not individual surprises. Flag anything within 60 days.</p>
+      <table class="tenant-table">
+        <thead>
+          <tr>
+            <th>Practitioner</th>
+            <th>Room</th>
+            <th>Lease Expiry</th>
+            <th>Insurance</th>
+            <th>Biz License</th>
+            <th>Invoice</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody id="tenant-table-body"></tbody>
+      </table>
+      <div class="card warn-left" style="margin-top:8px;">
+        <p style="font-size:13px;"><strong>April cluster alert:</strong> All business licenses expire in April each year. Build a calendar reminder for March 1 so Jo can request renewals before the rush — not after. This is not a per-practitioner task; it is a single batch action.</p>
+      </div>
+      <div class="card ok-left" style="margin-top:8px;">
+        <p style="font-size:13px;"><strong>Invoices deferred:</strong> Financial infrastructure is already built in the Vercel dashboard. Pull from there once the export file is available — don't rebuild here. Log as a follow-up: Vercel financial pull-in pending export or credentials from Jo.</p>
+      </div>
+    </div>
+
+    <!-- MARKETING LADDER -->
+    <div class="subview" id="sub-ladder">
+      <p class="lead" style="margin-bottom:16px;">Move practitioners up one rung at a time. Jacki owns Pre-Outreach — her personal note, not a form email. Everything from "link sent" forward is Jo's queue.</p>
+      <div id="mktg-ladder"></div>
+    </div>
+  </div>
+
+  <!-- ================================================================ -->
+  <!-- PRACTITIONER VIEW                                                 -->
+  <!-- ================================================================ -->
+  <div class="view" id="view-practitioner">
+
+    <div class="stats-row">
+      <div class="stat ok-top"><div class="stat-n">6</div><div class="stat-l">Intake Complete</div></div>
+      <div class="stat alert-top"><div class="stat-n" id="prac-gaps">20</div><div class="stat-l">Intake Gaps</div></div>
+      <div class="stat warn-top"><div class="stat-n">7</div><div class="stat-l">Mktg In Motion</div></div>
+      <div class="stat"><div class="stat-n">14</div><div class="stat-l">Pre-Outreach</div></div>
+    </div>
+
+    <h2>Roster <em>Gap View</em></h2>
+    <p class="lead">Green border = intake complete. Gold = marketing in motion, intake pending. Red = nothing started. Click any row to expand. Gap meter: 5-field completeness score. Hover labels for definitions.</p>
+
+    <div class="filter-row">
+      <span class="filter-pill active" onclick="filterRoster(this,'all')">All (26)</span>
+      <span class="filter-pill" onclick="filterRoster(this,'intake')">Intake Complete</span>
+      <span class="filter-pill" onclick="filterRoster(this,'tenant')">Tenants</span>
+      <span class="filter-pill" onclick="filterRoster(this,'yoga')">Yoga / Class</span>
+      <span class="filter-pill" onclick="filterRoster(this,'affiliate')">Affiliates</span>
+      <span class="filter-pill" onclick="filterRoster(this,'energy')">Energy Work</span>
+      <span class="filter-pill" onclick="filterRoster(this,'movement')">Movement &amp; Breath</span>
+      <span class="filter-pill" onclick="filterRoster(this,'education')">Education &amp; Workshops</span>
+      <span class="filter-pill" onclick="filterRoster(this,'mktg-none')">Pre-Outreach</span>
+    </div>
+    <div id="roster-mount"></div>
+  </div>
+
+  <!-- ================================================================ -->
+  <!-- PUBLIC / CLIENT ROUTING VIEW                                      -->
+  <!-- ================================================================ -->
+  <div class="view" id="view-public">
+
+    <div class="eyebrow" style="margin-bottom:6px;">Client-Facing · Symptom-First Routing · Demo Build</div>
+    <h2>Find Your <em>Path</em></h2>
+    <p class="lead">This is what replaces Jacki's Saturday afternoon phone calls. Start with how you feel. End with a bespoke recommendation. No modality names required.</p>
+
+    <div class="router-wrap">
+      <div class="router-section-label">How are you feeling right now? Select everything that applies.</div>
+      <div class="symptom-cloud" id="symptom-cloud"></div>
+
+      <div class="router-section-label">A few more things...</div>
+      <div class="router-controls">
+        <div class="router-control">
+          <label>Touch preference</label>
+          <select id="touch-pref">
+            <option value="any">No preference</option>
+            <option value="yes">Comfortable with touch</option>
+            <option value="no">Prefer no touch</option>
+          </select>
+        </div>
+        <div class="router-control">
+          <label>Availability</label>
+          <select id="avail-pref">
+            <option value="any">Flexible</option>
+            <option value="weekend">Weekends only</option>
+            <option value="weekday">Weekdays preferred</option>
+          </select>
+        </div>
+        <div class="router-control">
+          <label>Budget</label>
+          <select id="budget-pref">
+            <option value="any">Open</option>
+            <option value="low">Budget-friendly — show me a Flight</option>
+            <option value="high">Ready to invest in a full session</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="route-btn" id="route-btn" onclick="runRouter()" disabled>Find My Path</button>
+    </div>
+
+    <div class="router-results" id="router-results"></div>
+
+  </div>
+
+  <div class="footer">
+    <div>Collective Wellness · Command Center v3.0 · Phase 2 · 2026-05-07</div>
+    <div>v2.1 untouched as fallback · Meeting 2026-05-08 · Built for 217 practitioners</div>
+  </div>
+
+</div>
+
+<script>
+// ============================================================
+// GLOSSARY
+// ============================================================
+const GLOSSARY = {
+  'Energy Work':'Modalities where the client receives energetic treatment. Reiki, auriculotherapy, sound healing, intuitive healing. Client is typically still; the practitioner does the work.',
+  'Movement & Breath':'Modalities where the client\'s movement or breath is the vehicle. Qigong, yoga, Feldenkrais, therapeutic massage, fitness. Active or passive — but the body is the instrument.',
+  'Education & Workshops':'Coaching, counseling, human design, retreats, group classes. Learning and guided transformation. Licensed mental health lives here too.',
+  'Bodywork':'Operator tag for hands-on manual therapy. Sub-types: medical (Cheryl), therapeutic (Tiffany), intuitive (Anissa), somatic, specialized. Not shown to clients — chatbot routes by symptom match.',
+  'Somatic':'Body-based approach to trauma and emotional processing. The body is the entry point, not the mind. Often touch-based, can be movement-based.',
+  'Practitioner':'Any licensed or certified professional practicing independently at CW. Consolidated from "Holistic Practitioner" in v3 — same meaning, one label.',
+  'Tenant':'Practitioner who rents space at CW. Lease, insurance, and business license tracked on the Ops axis.',
+  'Affiliate':'Partner practitioner not renting space. In cross-referral network. No lease tracked.',
+  'Tenant-Only':'Rents space but not in referral or clinical routing. ASPT is the current example.',
+  'Occasional':'Workshop-only or one-off space rental. Kim Foss is the model type.',
+  'Flight':'Pre-sell package: 3 x 30-minute sessions across different practitioners. Lower price point, three chances to convert to recurring. Practitioners love it — lighter lift than a 90-minute commitment.',
+  'Sprint':'Structured short-arc intensive, typically workshop-based. Definition in progress.'
+};
+
+// ============================================================
+// PRACTITIONERS DATA
+// ============================================================
+const PRACTITIONERS = [
+  {id:'jacki',name:'JACKI MARIEST, RN',biz:'Heal Mind Body Soul',role:'Founder · Steward · Co-anchor',type:'founder',status:'active',intakeComplete:true,inReferral:true,flightOptIn:true,buckets:['Energy Work','Movement & Breath','Education & Workshops'],subTypes:{energyWork:['Auriculotherapy','Breathwork'],movementBreath:['Qigong'],educationWorkshops:['Human Design','Five Element Teaching','Workshops']},techniques:['Ear seeds','Meridian mapping','Qigong form instruction','Human Design chart reading'],symptomTags:['stress','sleep','anxiety','energy','chronic fatigue','hormonal balance','burnout'],constraints:{touch:true,clothesOn:true,fabricPref:null},mktg:[1,1,1,1,1],ops:{room:null,leaseExpiry:null,insuranceExpiry:null,bizLicenseExpiry:null,invoiceStatus:'current',notes:'Founder. HMBS is her practitioner entity inside CW. Qigong and auriculotherapy are separate offerings — classify each independently.'}},
+  {id:'kori',name:'KORI KELLY',biz:'Kori Kelly Psychic Medium',role:'Evidential Mediumship · Sound Healing · Grief Support',type:'tenant',status:'active',intakeComplete:true,inReferral:true,flightOptIn:true,buckets:['Energy Work','Education & Workshops'],subTypes:{energyWork:['Evidential Mediumship','Sound Healing'],educationWorkshops:['Grief Support Workshops']},techniques:['English Spiritualist tradition mediumship','Crystal bowls','Tuning forks','Grief processing'],symptomTags:['grief','loss','spiritual disconnection','anxiety','sleep','loneliness'],constraints:{touch:false,clothesOn:true,fabricPref:null},mktg:[1,1,0,1,1],ops:{room:'9',leaseExpiry:null,insuranceExpiry:null,bizLicenseExpiry:null,invoiceStatus:'current',notes:'Room 9. Strong seniors fit. High culture match.'}},
+  {id:'staceyhc',name:'STACEY HENRY-CARR',biz:'A Mind Spa Transformation',role:'Hypnotherapy · Life Coaching · Quantum Healing · Trauma-Informed',type:'tenant',status:'active',intakeComplete:true,inReferral:true,flightOptIn:false,buckets:['Education & Workshops','Energy Work'],subTypes:{educationWorkshops:['Hypnotherapy','Life Coaching','Trauma-Informed Coaching','Virtual Programs','Retreats'],energyWork:['Quantum Healing']},techniques:['Subconscious reprogramming','Intuitive insight','Somato-emotional processing'],symptomTags:['stress','anxiety','trauma','self-worth','grief','chronic pain','relationship','weight','burnout'],constraints:{touch:false,clothesOn:true,fabricPref:null},mktg:[1,1,0,1,1],ops:{room:null,leaseExpiry:null,insuranceExpiry:null,bizLicenseExpiry:null,invoiceStatus:'current',notes:'Virtual reach. Calendly live. Women-focused.'}},
+  {id:'kim',name:'DR. KIM DEHLBOM',biz:'Riptide Wellness',role:'Functional Medicine · Affiliate',type:'affiliate',status:'active',intakeComplete:true,inReferral:true,flightOptIn:false,buckets:['Education & Workshops'],subTypes:{educationWorkshops:['Functional Medicine','Nutrition Education','Lab Interpretation']},techniques:['Root-cause medicine','Nutritional protocols','Lab analysis','Hormonal balancing'],symptomTags:['chronic fatigue','hormonal balance','digestive issues','weight','sleep','inflammation'],constraints:{touch:false,clothesOn:true,fabricPref:null},mktg:[0,1,1,0,1],ops:{room:null,leaseExpiry:null,insuranceExpiry:null,bizLicenseExpiry:null,invoiceStatus:'current',notes:'Affiliate. Declined Flight. Strong referral partner.'}},
+  {id:'crystalh',name:'CRYSTAL HALL',biz:'My Tru Therapy',role:'LPC Associate · Trauma-Informed · Couples · Adolescent',type:'tenant',status:'active',intakeComplete:true,inReferral:true,flightOptIn:false,buckets:['Education & Workshops'],subTypes:{educationWorkshops:['Licensed Counseling','Trauma-Focused Therapy','Couples Counseling','Adolescent Therapy']},techniques:['Trauma-Focused CBT','EMDR (training)','Gottman method'],symptomTags:['anxiety','depression','trauma','relationship','adolescent mental health','grief','self-worth'],constraints:{touch:false,clothesOn:true,fabricPref:null},mktg:[0,0,0,0,0],ops:{room:null,leaseExpiry:null,insuranceExpiry:null,bizLicenseExpiry:null,invoiceStatus:'current',notes:'New. Headshot pending Megan at Harper Edit.'}},
+  {id:'tiffany',name:'TIFFANY MOORE',biz:"Tiffany's Therapeutic Massage LLC",role:'Therapeutic Massage · Oncology · TMJ · IASTM · 17 yrs',type:'tenant',status:'active',intakeComplete:true,inReferral:true,flightOptIn:false,buckets:['Movement & Breath'],subTypes:{movementBreath:['Therapeutic Massage','Oncology Massage','TMJ Massage','IASTM','Frozen Shoulder']},techniques:['IASTM tools','Oncology-adapted pressure','TMJ release','Frozen shoulder protocol','Lymphatic drainage'],symptomTags:['chronic pain','back pain','jaw pain','shoulder pain','tension','cancer recovery','injury recovery'],constraints:{touch:true,clothesOn:false,fabricPref:null},mktg:[0,0,0,0,0],ops:{room:null,leaseExpiry:null,insuranceExpiry:null,bizLicenseExpiry:null,invoiceStatus:'current',notes:'New. Trauma-informed. Declined Flight. Headshot pending.'}},
+  {id:'cheryl',name:'CHERYL MCDONOUGH',biz:'',role:'Medical Massage · Injury Rehab · Ergonomics · 15 yrs',type:'tenant',status:'active',intakeComplete:false,inReferral:true,flightOptIn:false,buckets:['Movement & Breath'],subTypes:{movementBreath:['Medical Massage','Injury Rehabilitation','Ergonomics']},techniques:['Trigger point therapy','Gua sha','Ergonomic assessment','Postural correction','Corporate wellness'],symptomTags:['back pain','injury recovery','workplace pain','posture','chronic pain','headaches','tension'],constraints:{touch:true,clothesOn:false,fabricPref:null},mktg:[1,1,0,0,0],ops:{room:'8',leaseExpiry:'2026-06-30',insuranceExpiry:null,bizLicenseExpiry:null,invoiceStatus:'current',notes:'LEASE ALERT: June 30, 2026. Reframe: lead with injury rehab and ergonomics, not "massage."'}},
+  {id:'staceyb',name:'STACEY BOWMAN',biz:'',role:'Trauma-Informed Counseling · First Responders · Veterans',type:'tenant',status:'active',intakeComplete:false,inReferral:true,flightOptIn:false,buckets:['Education & Workshops'],subTypes:{educationWorkshops:['Trauma-Informed Counseling','First Responder Counseling','Couples Therapy']},techniques:['"Mile in Your Boots" framework','Sliding scale (private)','Out-of-network only'],symptomTags:['trauma','PTSD','anxiety','relationship','burnout','grief'],constraints:{touch:false,clothesOn:true,fabricPref:null},mktg:[0,1,0,0,0],ops:{room:null,leaseExpiry:null,insuranceExpiry:null,bizLicenseExpiry:null,invoiceStatus:'current',notes:'100% retention. Craig subletting Fridays (Jacki aware).'}},
+  {id:'anissa',name:'ANISSA RUSSELL',biz:'',role:'Somatic · Intuitive Massage',type:'tenant',status:'active',intakeComplete:false,inReferral:true,flightOptIn:false,buckets:['Movement & Breath','Energy Work'],subTypes:{movementBreath:['Somatic Bodywork','Intuitive Massage'],energyWork:['Intuitive Healing']},techniques:['Somatic touch','Intuitive pressure','Nervous system regulation'],symptomTags:['trauma','stress','chronic pain','nervous system','disconnection','burnout'],constraints:{touch:true,clothesOn:false,fabricPref:'linen preferred'},mktg:[0,1,0,0,1],ops:{room:null,leaseExpiry:null,insuranceExpiry:null,bizLicenseExpiry:null,invoiceStatus:'current',notes:'Fabric preference: linen. Constraint critical for chatbot routing.'}},
+  {id:'jana',name:'JANA KADOVITZ',biz:'',role:'Acupuncture · Traditional Chinese Medicine',type:'tenant',status:'active',intakeComplete:false,inReferral:true,flightOptIn:false,buckets:['Energy Work','Education & Workshops'],subTypes:{energyWork:['Acupuncture','TCM','Gua sha'],educationWorkshops:['TCM Education','Second Spring Series']},techniques:['Needle acupuncture','Gua sha','Cupping','Pulse and tongue diagnosis','Five Element theory'],symptomTags:['chronic pain','stress','hormonal balance','digestive issues','sleep','fatigue','perimenopause'],constraints:{touch:true,clothesOn:false,fabricPref:null},mktg:[0,1,0,0,0],ops:{room:null,leaseExpiry:null,insuranceExpiry:null,bizLicenseExpiry:null,invoiceStatus:'current',notes:'Second Spring confirmed. Gua sha routes here.'}},
+  {id:'marisa',name:'MARISA SISSEL',biz:'',role:'Mental Health Counseling',type:'tenant',status:'active',intakeComplete:false,inReferral:true,flightOptIn:false,buckets:['Education & Workshops'],subTypes:{educationWorkshops:['Licensed Counseling']},techniques:[],symptomTags:['anxiety','depression','stress','relationship'],constraints:{touch:false,clothesOn:true,fabricPref:null},mktg:[0,1,0,0,0],ops:{room:null,leaseExpiry:null,insuranceExpiry:null,bizLicenseExpiry:null,invoiceStatus:'current',notes:'Mktg link sent.'}},
+  {id:'sean',name:'SEAN TURNER',biz:'',role:'Mental Health Counseling',type:'tenant',status:'active',intakeComplete:false,inReferral:true,flightOptIn:false,buckets:['Education & Workshops'],subTypes:{educationWorkshops:['Licensed Counseling']},techniques:[],symptomTags:['anxiety','depression','stress'],constraints:{touch:false,clothesOn:true,fabricPref:null},mktg:[0,0,0,0,0],ops:{room:null,leaseExpiry:null,insuranceExpiry:null,bizLicenseExpiry:null,invoiceStatus:'current',notes:''}},
+  {id:'nicole',name:'NICOLE NEVELE',biz:'',role:'Aesthetics · Beauty',type:'tenant',status:'active',intakeComplete:false,inReferral:true,flightOptIn:false,buckets:[],subTypes:{},techniques:[],symptomTags:['skin care','aesthetics','self-care'],constraints:{touch:true,clothesOn:null,fabricPref:null},mktg:[0,1,1,0,0],ops:{room:null,leaseExpiry:null,insuranceExpiry:null,bizLicenseExpiry:null,invoiceStatus:'current',notes:'Beauty & Aesthetics operator tag. Intake form follow-up in progress.'}},
+  {id:'yolanda',name:'YOLANDA GUIULFO',biz:'',role:'Bodywork · Specialized',type:'tenant',status:'active',intakeComplete:false,inReferral:true,flightOptIn:false,buckets:['Movement & Breath'],subTypes:{movementBreath:['Specialized Bodywork']},techniques:['Technique detail pending from Jacki'],symptomTags:['chronic pain','back pain','tension'],constraints:{touch:true,clothesOn:null,fabricPref:null},mktg:[0,1,0,0,0],ops:{room:null,leaseExpiry:null,insuranceExpiry:null,bizLicenseExpiry:null,invoiceStatus:'current',notes:'Sub-type detail pending Jacki confirmation.'}},
+  {id:'daystar',name:'DAYSTAR',biz:'',role:'Beauty · Aesthetics · Education',type:'tenant',status:'active',intakeComplete:false,inReferral:true,flightOptIn:false,buckets:['Education & Workshops'],subTypes:{educationWorkshops:['Beauty Education','Workshops']},techniques:[],symptomTags:['skin care','self-care'],constraints:{touch:true,clothesOn:null,fabricPref:null},mktg:[0,0,0,0,0],ops:{room:null,leaseExpiry:null,insuranceExpiry:null,bizLicenseExpiry:null,invoiceStatus:'current',notes:''}},
+  {id:'wendy',name:'WENDY (PILLOW TALK)',biz:'Pillow Talk',role:'Affiliate · Workshop / Drop-in',type:'affiliate',status:'active',intakeComplete:false,inReferral:true,flightOptIn:false,buckets:['Education & Workshops'],subTypes:{educationWorkshops:['Workshops','Drop-in Events']},techniques:[],symptomTags:['education','community','self-care'],constraints:{touch:false,clothesOn:true,fabricPref:null},mktg:[0,0,0,0,0],ops:{room:null,leaseExpiry:null,insuranceExpiry:null,bizLicenseExpiry:null,invoiceStatus:'n/a',notes:'Great brand. Occasional workshop use.'}},
+  {id:'aspt',name:'ASPT',biz:'',role:'Lab Services · Tenant-Only · No Referral',type:'tenant-only',status:'active',intakeComplete:false,inReferral:false,flightOptIn:false,buckets:[],subTypes:{},techniques:[],symptomTags:[],constraints:{touch:false,clothesOn:true,fabricPref:null},mktg:[0,0,0,0,0],ops:{room:null,leaseExpiry:null,insuranceExpiry:null,bizLicenseExpiry:null,invoiceStatus:'current',notes:'Pays rent on time. Never enters referral base or client routing.'}},
+  {id:'teresa',name:'TERESA BULFORD',biz:'',role:'Yoga Instructor',type:'yoga',status:'active',intakeComplete:false,inReferral:true,flightOptIn:false,buckets:['Movement & Breath'],subTypes:{movementBreath:['Yoga']},techniques:[],symptomTags:['stress','flexibility','strength','anxiety'],constraints:{touch:false,clothesOn:true,fabricPref:null},mktg:[0,0,0,0,0],ops:{room:null,leaseExpiry:null,insuranceExpiry:null,bizLicenseExpiry:null,invoiceStatus:'current',notes:''}},
+  {id:'annemarie',name:'ANNE MARIE LARMON',biz:'',role:'Yoga Instructor',type:'yoga',status:'active',intakeComplete:false,inReferral:true,flightOptIn:false,buckets:['Movement & Breath'],subTypes:{movementBreath:['Yoga']},techniques:[],symptomTags:['stress','flexibility','anxiety','sleep'],constraints:{touch:false,clothesOn:true,fabricPref:null},mktg:[0,0,0,0,0],ops:{room:null,leaseExpiry:null,insuranceExpiry:null,bizLicenseExpiry:null,invoiceStatus:'current',notes:''}},
+  {id:'marlene',name:'MARLENE GLASSER',biz:'',role:'Movement / Yoga',type:'yoga',status:'active',intakeComplete:false,inReferral:true,flightOptIn:false,buckets:['Movement & Breath'],subTypes:{movementBreath:['Yoga','Movement']},techniques:[],symptomTags:['stress','flexibility','strength'],constraints:{touch:false,clothesOn:true,fabricPref:null},mktg:[0,0,0,0,0],ops:{room:null,leaseExpiry:null,insuranceExpiry:null,bizLicenseExpiry:null,invoiceStatus:'current',notes:''}},
+  {id:'meghann',name:'MEGHANN CHAPMAN',biz:'',role:'Yoga Instructor',type:'yoga',status:'active',intakeComplete:false,inReferral:true,flightOptIn:false,buckets:['Movement & Breath'],subTypes:{movementBreath:['Yoga']},techniques:[],symptomTags:['stress','flexibility'],constraints:{touch:false,clothesOn:true,fabricPref:null},mktg:[0,0,0,0,0],ops:{room:null,leaseExpiry:null,insuranceExpiry:null,bizLicenseExpiry:null,invoiceStatus:'current',notes:''}},
+  {id:'ashlynn',name:'ASHLYNN HASSELL',biz:'',role:'Yoga Instructor',type:'yoga',status:'active',intakeComplete:false,inReferral:true,flightOptIn:false,buckets:['Movement & Breath'],subTypes:{movementBreath:['Yoga']},techniques:[],symptomTags:['stress','flexibility'],constraints:{touch:false,clothesOn:true,fabricPref:null},mktg:[0,0,0,0,0],ops:{room:null,leaseExpiry:null,insuranceExpiry:null,bizLicenseExpiry:null,invoiceStatus:'current',notes:''}},
+  {id:'sandra',name:'SANDRA GONZALEZ',biz:'',role:'Spanish-language Yoga',type:'yoga',status:'active',intakeComplete:false,inReferral:true,flightOptIn:false,buckets:['Movement & Breath'],subTypes:{movementBreath:['Yoga (Spanish-language)']},techniques:['Spanish-language instruction'],symptomTags:['stress','flexibility','anxiety'],constraints:{touch:false,clothesOn:true,fabricPref:null},mktg:[0,0,0,0,0],ops:{room:null,leaseExpiry:null,insuranceExpiry:null,bizLicenseExpiry:null,invoiceStatus:'current',notes:'Underutilized differentiator. Spanish-language community reach.'}},
+  {id:'beth',name:'BETH SCOTT',biz:'',role:'Feldenkrais · Awareness Through Movement',type:'class',status:'active',intakeComplete:false,inReferral:true,flightOptIn:false,buckets:['Movement & Breath'],subTypes:{movementBreath:['Feldenkrais','Awareness Through Movement']},techniques:['ATM lessons','Functional Integration'],symptomTags:['chronic pain','mobility','nervous system','injury recovery','posture','back pain'],constraints:{touch:true,clothesOn:true,fabricPref:null},mktg:[0,0,0,0,0],ops:{room:null,leaseExpiry:null,insuranceExpiry:null,bizLicenseExpiry:null,invoiceStatus:'current',notes:'Feldenkrais is hard to market by name — route by symptom not label.'}},
+  {id:'lisa',name:'LISA DITTMAR',biz:'',role:'Fitness Instructor',type:'class',status:'active',intakeComplete:false,inReferral:true,flightOptIn:false,buckets:['Movement & Breath'],subTypes:{movementBreath:['Fitness','Strength Training']},techniques:[],symptomTags:['fitness','weight','strength','energy','burnout'],constraints:{touch:false,clothesOn:true,fabricPref:null},mktg:[0,0,0,0,0],ops:{room:null,leaseExpiry:null,insuranceExpiry:null,bizLicenseExpiry:null,invoiceStatus:'current',notes:''}},
+  {id:'sarah',name:'SARAH GLENN',biz:'',role:'Movement · Lactation',type:'class',status:'active',intakeComplete:false,inReferral:true,flightOptIn:false,buckets:['Movement & Breath','Education & Workshops'],subTypes:{movementBreath:['Postnatal Movement'],educationWorkshops:['Lactation Support']},techniques:['Postnatal recovery','Lactation consulting'],symptomTags:['postnatal','recovery','fatigue','anxiety'],constraints:{touch:false,clothesOn:true,fabricPref:null},mktg:[0,0,0,0,0],ops:{room:null,leaseExpiry:null,insuranceExpiry:null,bizLicenseExpiry:null,invoiceStatus:'current',notes:''}},
+  {id:'julie',name:'JULIE LINDROTH',biz:'',role:'Counseling — Archived',type:'tenant',status:'archived',intakeComplete:false,inReferral:false,flightOptIn:false,buckets:[],subTypes:{},techniques:[],symptomTags:[],constraints:{touch:false,clothesOn:true,fabricPref:null},mktg:[0,0,0,0,0],ops:{room:null,leaseExpiry:null,insuranceExpiry:null,bizLicenseExpiry:null,invoiceStatus:'n/a',notes:'Removed from active roster per May 1 session — Jacki confirmed wipe.'}}
+];
+
+// ============================================================
+// OFFERINGS DATA
+// ============================================================
+const OFFERINGS = [
+  {id:'qigong-am',type:'class',name:'Morning Qigong',practitioners:['jacki'],schedule:'TBD',capacity:null,registered:0,status:'active',pricePoint:'',location:'Community Room',description:'Five Element Qigong. Jacki-led. High demand signal from symptom router.',symptomMatch:['stress','anxiety','sleep','energy','burnout','chronic fatigue']},
+  {id:'second-spring',type:'workshop',name:'Second Spring Series',practitioners:['jacki','jana'],schedule:'Q2 2026',capacity:20,registered:0,status:'forming',threshold:12,pricePoint:'Paid registration',location:'CW Big Room',description:'4-module menopause series. Jacki and Jana confirmed. 2nd practitioner TBD.',symptomMatch:['hormonal balance','perimenopause','sleep','fatigue']},
+  {id:'meet-practitioners',type:'workshop',name:'Meet the Practitioners',practitioners:[],schedule:'TBD',capacity:20,registered:0,status:'forming',threshold:12,pricePoint:'Low / Free',location:'CW Big Room',description:'High-conversion workshop. Clients who need to ask questions before booking get all answers in one room. One person asks what everyone wants to know.',symptomMatch:[]},
+  {id:'ergonomics-class',type:'class',name:'Ergonomics at Work',practitioners:['cheryl'],schedule:'TBD',capacity:null,registered:0,status:'forming',threshold:8,pricePoint:'',location:'CW Big Room',description:'Cheryl-led ergonomics class. Lead-gen play for her injury rehab practice. Especially strong for corporate referrals.',symptomMatch:['workplace pain','posture','back pain','chronic pain']},
+  {id:'sound-bath',type:'soundbath',name:'Sound Bath',practitioners:['kori'],schedule:'TBD',capacity:null,registered:0,status:'active',pricePoint:'',location:'Community Room',description:'Crystal bowl and tuning fork sound healing with Kori.',symptomMatch:['stress','sleep','anxiety','grief','loneliness']},
+  {id:'flight-intro',type:'flight',name:'Intro Flight',practitioners:[],schedule:'Pre-sell now',capacity:null,registered:0,status:'presell',pricePoint:'Budget-friendly — lower than a single full session',location:'Various rooms',description:'3 x 30-minute samplers across modalities. Pre-sell this before sessions run. Three chances for practitioners to convert to recurring clients.',symptomMatch:[]}
+];
+
+// ============================================================
+// HELPER FUNCTIONS
+// ============================================================
+function mktgScore(p){return p.mktg.reduce((a,b)=>a+b,0);}
+function mktgInfo(s){
+  if(s===5) return['Full · 5/5','ok'];
+  if(s===4) return['Near · 4/5','sage'];
+  if(s===3) return['Mid · 3/5','warn'];
+  if(s>=1)  return['Sent · '+s+'/5','muted-b'];
+  return['Pre-outreach','alert'];
+}
+function typeLabel(t){
+  return{founder:'Founder',tenant:'Tenant',affiliate:'Affiliate',yoga:'Yoga',class:'Class Instructor','tenant-only':'Tenant-Only',occasional:'Occasional'}[t]||t;
+}
+function intakeCls(p){
+  if(p.status==='archived') return 'archived';
+  if(p.type==='tenant-only') return 'tenant-only';
+  if(p.intakeComplete) return 'intake-complete';
+  if(mktgScore(p)>=1) return 'intake-partial';
+  return 'intake-none';
+}
+function bucketTags(p){
+  if(!p.buckets||p.buckets.length===0) return '<span class="bucket-tag none">No bucket assigned</span>';
+  return p.buckets.map(b=>{
+    const cls=b==='Energy Work'?'energy':b==='Education & Workshops'?'education':'movement';
+    return`<span class="bucket-tag ${cls}"><span class="tip">${b}<span class="tip-pop">${GLOSSARY[b]||''}</span></span></span>`;
+  }).join('');
+}
+function gapMeter(p){
+  const f=[p.intakeComplete,p.techniques&&p.techniques.length>0,p.symptomTags&&p.symptomTags.length>0,p.buckets&&p.buckets.length>0,mktgScore(p)>=3];
+  return'<div class="gap-meter">'+f.map(x=>`<div class="gap-pip ${x?'filled':''}"></div>`).join('')+'</div>';
+}
+function renderPracRow(p, showArchived=false){
+  if(p.status==='archived'&&!showArchived) return'';
+  const sc=mktgScore(p);
+  const[mLabel,mCls]=mktgInfo(sc);
+  const ic=intakeCls(p);
+  const bizHtml=p.biz?`<span class="prac-biz">${p.biz}</span>`:'';
+  const techHtml=p.techniques&&p.techniques.length>0
+    ?`<div class="detail-field"><div class="detail-label">Techniques</div><div class="detail-val complete">${p.techniques.join(', ')}</div></div>`
+    :`<div class="detail-field"><div class="detail-label">Techniques</div><div class="detail-val missing">Not yet collected — request from practitioner</div></div>`;
+  const sympHtml=p.symptomTags&&p.symptomTags.length>0
+    ?`<div class="detail-field"><div class="detail-label">Symptom Tags</div><div class="detail-val complete">${p.symptomTags.join(', ')}</div></div>`
+    :`<div class="detail-field"><div class="detail-label">Symptom Tags</div><div class="detail-val missing">Not mapped — chatbot cannot route to this practitioner</div></div>`;
+  const conTxt=p.constraints.touch!==null
+    ?`Touch: ${p.constraints.touch?'Yes':'No'} · Clothes: ${p.constraints.clothesOn?'On':p.constraints.clothesOn===false?'Off':'Unknown'}${p.constraints.fabricPref?` · ${p.constraints.fabricPref}`:''}`
+    :'Constraint data pending';
+  const conCls=p.constraints.touch!==null?'complete':'missing';
+  const leaseHtml=p.ops&&p.ops.leaseExpiry
+    ?`<div class="detail-field"><div class="detail-label">Lease Expiry</div><div class="detail-val missing">${p.ops.leaseExpiry} — ALERT</div></div>`:'' ;
+  const noteHtml=p.ops&&p.ops.notes
+    ?`<div class="detail-field" style="grid-column:1/-1"><div class="detail-label">Notes</div><div class="detail-val partial">${p.ops.notes}</div></div>`:'';
+  return`<div class="prac-row ${ic}" onclick="toggleDetail('${p.id}')">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;">
+    <div><span class="prac-name">${p.name}</span>${bizHtml}<div class="prac-role">${p.role}</div></div>
+    <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;">
+      ${p.intakeComplete?'<span class="badge ok">Intake Complete</span>':'<span class="badge alert">Intake Pending</span>'}
+      <span class="badge ${mCls}">${mLabel}</span>
+      <span class="badge muted-b"><span class="tip">${typeLabel(p.type)}<span class="tip-pop">${GLOSSARY[typeLabel(p.type)]||typeLabel(p.type)}</span></span></span>
+      ${p.status==='archived'?'<span class="badge bark">Archived</span>':''}
+    </div>
+  </div>
+  <div class="prac-buckets">${bucketTags(p)}</div>
+  ${gapMeter(p)}
+  <div class="prac-detail" id="det-${p.id}">
+    <div class="detail-grid">
+      ${techHtml}${sympHtml}
+      <div class="detail-field"><div class="detail-label">Constraints</div><div class="detail-val ${conCls}">${conTxt}</div></div>
+      <div class="detail-field"><div class="detail-label">Flight Opt-in</div><div class="detail-val ${p.flightOptIn?'complete':'partial'}">${p.flightOptIn?'Yes':'No'}</div></div>
+      <div class="detail-field"><div class="detail-label">In Referral Network</div><div class="detail-val ${p.inReferral?'complete':'partial'}">${p.inReferral?'Yes':'No'}</div></div>
+      ${leaseHtml}${noteHtml}
+    </div>
+  </div>
+</div>`;
+}
+function toggleDetail(id){const el=document.getElementById('det-'+id);if(el)el.classList.toggle('open');}
+
+// ============================================================
+// VIEW SWITCHER
+// ============================================================
+function setView(v){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.view===v));
+  document.querySelectorAll('.view').forEach(x=>x.classList.toggle('active',x.id==='view-'+v));
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function setSub(s){
+  document.querySelectorAll('.subtab').forEach(t=>t.classList.toggle('active',t.dataset.sub===s));
+  document.querySelectorAll('.subview').forEach(x=>x.classList.toggle('active',x.id==='sub-'+s));
+}
+
+// ============================================================
+// RENDER: PRACTITIONER ROSTER
+// ============================================================
+let rosterFilter='all';
+function renderRoster(){
+  const mount=document.getElementById('roster-mount');
+  if(!mount) return;
+  const list=PRACTITIONERS.filter(p=>{
+    if(p.status==='archived') return false;
+    switch(rosterFilter){
+      case'all':return true;
+      case'intake':return p.intakeComplete;
+      case'tenant':return p.type==='tenant'||p.type==='founder';
+      case'yoga':return p.type==='yoga'||p.type==='class';
+      case'affiliate':return p.type==='affiliate';
+      case'energy':return p.buckets&&p.buckets.includes('Energy Work');
+      case'movement':return p.buckets&&p.buckets.includes('Movement & Breath');
+      case'education':return p.buckets&&p.buckets.includes('Education & Workshops');
+      case'mktg-none':return mktgScore(p)===0&&p.type!=='tenant-only';
+      default:return true;
+    }
+  });
+  mount.innerHTML=list.map(p=>renderPracRow(p)).join('');
+}
+function filterRoster(el,f){
+  rosterFilter=f;
+  document.querySelectorAll('.filter-pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  renderRoster();
+}
+
+// ============================================================
+// RENDER: FOUNDER ROSTER
+// ============================================================
+let founderFilter='all';
+function renderFounderRoster(){
+  const mount=document.getElementById('founder-roster');
+  if(!mount) return;
+  const list=PRACTITIONERS.filter(p=>{
+    switch(founderFilter){
+      case'all':return p.status==='active';
+      case'intake':return p.status==='active'&&p.intakeComplete;
+      case'gaps':return p.status==='active'&&!p.intakeComplete;
+      case'archived':return p.status==='archived';
+      default:return p.status==='active';
+    }
+  });
+  mount.innerHTML=list.map(p=>renderPracRow(p,true)).join('');
+}
+function filterFounder(el,f){
+  founderFilter=f;
+  document.querySelectorAll('#founder-filter-row .filter-pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  renderFounderRoster();
+}
+
+// ============================================================
+// RENDER: OFFERINGS (Founder)
+// ============================================================
+function renderFounderOfferings(){
+  const allMount=document.getElementById('founder-offerings-all');
+  const gapMount=document.getElementById('founder-offerings-gaps');
+  if(allMount){
+    allMount.innerHTML=OFFERINGS.map(o=>{
+      const pct=o.capacity?(o.registered/o.capacity*100):null;
+      const pBar=pct!==null?`<div class="prog-bar-wrap"><div class="prog-bar ${pct<40?'low':pct<75?'mid':''}" style="width:${Math.max(pct,0)}%"></div></div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px;font-family:'Montserrat',sans-serif;letter-spacing:0.08em;">${o.registered} / ${o.capacity} registered${o.threshold?' · runs at '+o.threshold:''}</div>`:
+        '<div style="font-size:11px;color:var(--muted);font-family:\'Montserrat\',sans-serif;letter-spacing:0.08em;">Open capacity</div>';
+      return`<div class="offering-row ${o.status}" style="margin-bottom:3px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;">
+          <div><div class="offering-name">${o.name}</div><div style="font-size:12px;color:var(--muted);margin-top:2px;">${o.description}</div></div>
+          <div class="offering-meta">
+            <span class="badge ${o.status==='active'?'ok':o.status==='presell'?'gold':o.status==='forming'?'bark':'muted-b'}">${o.type} · ${o.status}</span>
+            <span class="badge muted-b">${o.location}</span>
+          </div>
+        </div>
+        ${pBar}
+      </div>`;
+    }).join('');
+  }
+  if(gapMount){
+    const gaps=OFFERINGS.filter(o=>o.status==='forming'||o.status==='presell');
+    gapMount.innerHTML=gaps.map(o=>{
+      const pct=o.capacity?(o.registered/o.capacity*100):0;
+      return`<div class="gap-item">
+        <div class="gap-dot ${pct<40?'red':'amber'}"></div>
+        <div><strong>${o.name}</strong> — ${o.registered||'0'}${o.capacity?'/'+o.capacity+' registered':' pre-sells'}.${o.threshold?' Runs at '+o.threshold+'.':''} ${o.description.split('.')[0]}.</div>
+      </div>`;
+    }).join('');
+  }
+}
+
+// ============================================================
+// RENDER: TENANT TABLE (Operator)
+// ============================================================
+function renderTenantTable(){
+  const tbody=document.getElementById('tenant-table-body');
+  if(!tbody) return;
+  const tenants=PRACTITIONERS.filter(p=>p.status==='active'&&(p.type==='tenant'||p.type==='founder'));
+  tbody.innerHTML=tenants.map(p=>{
+    const lease=p.ops.leaseExpiry
+      ?`<span class="badge alert">${p.ops.leaseExpiry}</span>`
+      :`<span class="badge muted-b">Data needed</span>`;
+    const ins=p.ops.insuranceExpiry
+      ?`<span class="badge warn">${p.ops.insuranceExpiry}</span>`
+      :`<span class="badge muted-b">Data needed</span>`;
+    const biz=p.ops.bizLicenseExpiry
+      ?`<span class="badge warn">${p.ops.bizLicenseExpiry}</span>`
+      :`<span class="badge muted-b">Data needed</span>`;
+    const inv={'current':'<span class="badge ok">Current</span>','open':'<span class="badge alert">Open</span>','overdue':'<span class="badge alert">Overdue</span>','n/a':'<span class="badge muted-b">N/A</span>'}[p.ops.invoiceStatus||'current'];
+    return`<tr>
+      <td><div class="tenant-name">${p.name}</div><div style="font-size:11px;color:var(--muted);">${p.biz||p.role}</div></td>
+      <td>${p.ops.room||'—'}</td>
+      <td>${lease}</td>
+      <td>${ins}</td>
+      <td>${biz}</td>
+      <td>${inv}</td>
+      <td style="font-size:12px;color:var(--muted);max-width:180px;">${p.ops.notes?p.ops.notes.split('.')[0]+'.':''}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ============================================================
+// RENDER: MARKETING LADDER (Operator)
+// ============================================================
+function renderMktgLadder(){
+  const mount=document.getElementById('mktg-ladder');
+  if(!mount) return;
+  const rungs=[
+    {label:'Full · 5/5',min:5,max:5,cls:'ok',desc:'All marketing checkpoints complete.'},
+    {label:'Near · 4/5',min:4,max:4,cls:'sage',desc:'One checkpoint outstanding — push to full.'},
+    {label:'Mid · 3/5',min:3,max:3,cls:'warn',desc:'Halfway. Need bio, headshot, or social handle.'},
+    {label:'Link Sent · 1–2/5',min:1,max:2,cls:'bark',desc:"Marketing link sent. 7-day and 14-day follow-up cadence. Jo's queue."},
+    {label:'Pre-Outreach · 0/5',min:0,max:0,cls:'alert',desc:"Zero checkpoints. Jacki's personal note first — not a form email. Hand off to Jo once they say yes."}
+  ];
+  mount.innerHTML=rungs.map(r=>{
+    const people=PRACTITIONERS
+      .filter(p=>p.status==='active'&&p.type!=='tenant-only')
+      .filter(p=>{const s=mktgScore(p); return s>=r.min&&s<=r.max;});
+    if(people.length===0) return'';
+    return`<div class="ladder-rung" style="border-left:3px solid var(--${r.cls==='muted-b'?'muted':r.cls});">
+      <div>
+        <div class="rung-label">${r.label}</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px;">${r.desc}</div>
+        <div style="font-size:13px;color:var(--text);margin-top:8px;">${people.map(p=>p.name.split(' ').slice(0,2).join(' ')).join(', ')}</div>
+      </div>
+      <div style="text-align:right;">
+        <div class="rung-count">${people.length}</div>
+        <span class="badge ${r.cls}" style="margin-top:4px;display:inline-block;">${r.label.split('·')[0].trim()}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+// SYMPTOM ROUTER (Public view)
+// ============================================================
+const ALL_SYMPTOMS=[
+  'stress','anxiety','sleep','back pain','chronic pain','fatigue','grief','trauma',
+  'burnout','hormonal balance','digestive issues','relationship','self-worth',
+  'injury recovery','posture','flexibility','strength','energy','weight',
+  'spiritual disconnection','loneliness','perimenopause','postnatal','nervous system'
+];
+
+function initRouter(){
+  const cloud=document.getElementById('symptom-cloud');
+  if(!cloud) return;
+  cloud.innerHTML=ALL_SYMPTOMS.map(s=>`<span class="symptom-tag" data-symptom="${s}" onclick="toggleSymptom(this)">${s}</span>`).join('');
+}
+function toggleSymptom(el){
+  el.classList.toggle('selected');
+  const any=document.querySelectorAll('.symptom-tag.selected').length>0;
+  const btn=document.getElementById('route-btn');
+  if(btn) btn.disabled=!any;
+}
+function runRouter(){
+  const selected=[...document.querySelectorAll('.symptom-tag.selected')].map(e=>e.dataset.symptom);
+  const touchPref=document.getElementById('touch-pref').value;
+  const budget=document.getElementById('budget-pref').value;
+  const resultsDiv=document.getElementById('router-results');
+  if(!resultsDiv||selected.length===0) return;
+  if(budget==='low'){
+    resultsDiv.innerHTML=renderFlightSuggestion(selected);
+    return;
+  }
+  const scored=PRACTITIONERS
+    .filter(p=>p.status==='active'&&p.inReferral&&p.symptomTags&&p.symptomTags.length>0)
+    .map(p=>{
+      const matches=selected.filter(s=>p.symptomTags.includes(s));
+      return{...p,matchCount:matches.length,matchedSymptoms:matches};
+    })
+    .filter(p=>p.matchCount>0)
+    .filter(p=>{
+      if(touchPref==='any') return true;
+      if(touchPref==='yes') return p.constraints.touch===true;
+      if(touchPref==='no') return p.constraints.touch===false;
+      return true;
+    })
+    .sort((a,b)=>b.matchCount-a.matchCount)
+    .slice(0,5);
+  if(scored.length===0){
+    resultsDiv.innerHTML=`<div class="no-match-state"><h3 style="font-family:'Cormorant Garamond',serif;color:var(--forest);">No exact matches with your current filters.</h3><p style="color:var(--muted);margin-top:8px;">Try relaxing your touch preference, or <a href="#" onclick="document.getElementById('touch-pref').value='any';return false;" style="color:var(--forest);">change to "no preference."</a></p></div>`;
+    return;
+  }
+  const matchStrength=sc=>sc>=3?'strong':sc>=2?'mid':'';
+  const rankLabel=i=>['Best match','Strong match','Good match','Possible match','Worth exploring'][i]||'Match';
+  let html=`<h2 style="margin-top:0;">Your <em>Recommended Path</em></h2><p class="lead">Based on what you're experiencing, here are the practitioners most aligned with your needs.</p>`;
+  html+=scored.map((p,i)=>{
+    const bucketHtml=p.buckets&&p.buckets.length?p.buckets.map(b=>{const cls=b==='Energy Work'?'energy':b==='Education & Workshops'?'education':'movement';return`<span class="bucket-tag ${cls}">${b}</span>`;}).join(''):'';
+    const techSnippet=p.techniques&&p.techniques.length?`<div style="font-size:12px;color:var(--muted);margin-top:6px;">Specialties: ${p.techniques.slice(0,3).join(', ')}${p.techniques.length>3?' + more':''}</div>`:'';
+    const fabricNote=p.constraints.fabricPref?`<div style="font-size:12px;color:var(--bark);margin-top:4px;">Note: ${p.constraints.fabricPref}</div>`:'';
+    return`<div class="result-card match-${matchStrength(p.matchCount)}">
+      <div class="result-rank">— ${rankLabel(i)} · ${p.matchCount} of ${selected.length} symptoms matched —</div>
+      <div class="result-name">${p.name}${p.biz?`<span style="font-size:14px;font-weight:400;color:var(--bark);margin-left:10px;font-style:italic;">${p.biz}</span>`:''}</div>
+      <div style="font-size:13px;color:var(--muted);margin-top:2px;">${p.role}</div>
+      <div class="result-tags" style="margin-top:10px;">${p.matchedSymptoms.map(s=>`<span class="match-tag">${s}</span>`).join('')}</div>
+      <div class="prac-buckets" style="margin-top:8px;">${bucketHtml}</div>
+      ${techSnippet}${fabricNote}
+      ${p.constraints.touch===false?'<div style="font-size:12px;color:var(--ok);margin-top:6px;">No touch required — clothes stay on.</div>':''}
+    </div>`;
+  }).join('');
+  if(scored.length>=2){
+    html+=renderFlightSuggestion(selected);
+  }
+  const classMatches=OFFERINGS.filter(o=>(o.status==='active'||o.status==='forming')&&o.symptomMatch.some(s=>selected.includes(s)));
+  if(classMatches.length>0){
+    html+=`<div style="margin-top:24px;"><h3 style="font-family:'Cormorant Garamond',serif;color:var(--forest);margin-bottom:12px;">Also consider: upcoming classes and workshops</h3>`;
+    html+=classMatches.map(o=>`<div class="offering-row ${o.status}" style="margin-bottom:3px;"><div class="offering-name">${o.name}</div><div style="font-size:12px;color:var(--muted);margin-top:2px;">${o.description}</div><div class="offering-meta" style="margin-top:6px;"><span class="badge ${o.status==='active'?'ok':o.status==='presell'?'gold':'bark'}">${o.type} · ${o.status}</span><span class="badge muted-b">${o.location}</span></div></div>`).join('');
+    html+='</div>';
+  }
+  resultsDiv.innerHTML=html;
+  resultsDiv.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function renderFlightSuggestion(selected){
+  return`<div class="flight-card">
+    <h3>Consider a <em style="font-style:italic;">Flight Package</em></h3>
+    <p style="font-size:14px;color:var(--bark);margin-top:8px;">Not ready to commit to a full session? A Flight gives you 3 x 30-minute samplers across different practitioners — lower cost, lower commitment, three chances to find your match. Pre-sell pricing available now. Ask Jacki about current Flight options.</p>
+    <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+      <span class="badge gold">Pre-sell available</span>
+      <span class="badge forest">3 x 30 min</span>
+      <span class="badge muted-b">Budget-friendly entry point</span>
+    </div>
+  </div>`;
+}
+
+// ============================================================
+// INIT
+// ============================================================
+renderRoster();
+renderFounderRoster();
+renderFounderOfferings();
+renderTenantTable();
+renderMktgLadder();
+initRouter();
+</script>
+</body>
+</html>
